@@ -5,6 +5,7 @@ trained_player_data = pd.read_csv("Player_predictions.csv")
 # Code taken from https://github.com/nuebar/forecasting-fantasy-football
 # nuebar's code:
 
+# TODO add bias for the upcoming fixtures and for the model accuracy produced by the machine learning algorithm
 
 def select_team(expected_scores, prices, positions, clubs, total_budget=100, sub_factor=0.2):
     num_players = len(expected_scores)

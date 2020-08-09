@@ -8,20 +8,12 @@ from sklearn.linear_model import LinearRegression
 
 
 def predicted_points(team_code, data, training_counts = 10, n=3):
-
-    #headers = ["total_points", "assists", "clean_sheets", "creativity",
-    #"goals_conceded", "goals_scored", "ict_index", "influence",
-    #"minutes", "team_a_score", "team_h_score", "threat", "value", "was_home",
-    #"yellow_cards", "saves","round"]
-
-    # headers = ["total_points", "assists", "clean_sheets", "creativity",
-    #            "goals_conceded", "goals_scored", "ict_index", "influence",
-    #            "minutes", "team_a_score", "team_h_score", "threat",
-    #            "value", "was_home", "saves", "round"]
+    # Features used to train the model
     headers = ["total_points", "assists", "clean_sheets", "creativity",
                "goals_conceded", "goals_scored", "ict_index", "influence",
                "minutes", "team_a_score", "team_h_score", "threat",
                "value", "was_home", "saves", "round"]
+    # Work out the fixture difficulty rating so that it can be added to the model
     team_dif_data = fd.fixture_dif_data(team_code)
     temp = []
     for k, v in enumerate(data["round"]):

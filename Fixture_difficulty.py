@@ -1,13 +1,9 @@
-from statistics import mean
 import pandas as pd
 import numpy as np
-import sklearn
-from sklearn import linear_model
-from sklearn.linear_model import LinearRegression
 
 # Get the next upcoming fixture in the gw for the team
-fixture_data = pd.read_csv("../FPL_Machine_learning/Fantasy-Premier-League-master/data/2019-20/fixtures.csv")
-team_data = pd.read_csv("../FPL_Machine_learning/Fantasy-Premier-League-master/data/2019-20/teams.csv")
+fixture_data = pd.read_csv("../FPL_ML_2020/data/2019-20/fixtures.csv")
+team_data = pd.read_csv("../FPL_ML_2020/data/2019-20/teams.csv")
 np_team_data = np.array(team_data)
 
 
@@ -32,7 +28,7 @@ def id_to_team_data(id):
 # Get a generic gameweek (2019-2020 gw 1)
 def fixture_dif_data(team_code):
     dif_home = [[],[]]
-    fixture_data = pd.read_csv("../FPL_Machine_learning/Fantasy-Premier-League-master/data/2019-20/fixtures.csv")
+    # fixture_data = pd.read_csv("../FPL_ML_2020/data/2019-20/fixtures.csv")
     team_h = fixture_data["team_h"]
     for i,v in enumerate(team_h):
         if team_code == v:
@@ -42,17 +38,6 @@ def fixture_dif_data(team_code):
             dif_home[1].append(gameweek[i])
             dif_home[0].append(fixture_data["team_a_difficulty"][i])
     return dif_home
-
-
-
-
-
-
-        # overall_difficulty_rating = team_h_difficulty[i] - team_a_difficulty[i]
-        # games.append([gameweek[i]])
-        # print("gameweek {}".format(gameweek[i]), id_to_team_data(team_h[i]), " vs ", id_to_team_data(team_a[i]))
-        # print("Overall difficulty rating = {}".format(overall_difficulty_rating))
-
 
 def player_strength(team_id, position, fixture_home):
     output = id_to_team_data(team_id)
@@ -67,17 +52,9 @@ def player_strength(team_id, position, fixture_home):
         else:
             return output["strength_attack_away"]
 
-# team_code = 2
-# for k,v in enumerate(team_a):
-#     if v == team_code:
-#         temp = id_to_team_data(team_code)
-#         print(temp["name"])
-
 
 def player_opposition(team_id, gameweek_number=1):
    pass
-
-
 
 
 for week in gameweek:
