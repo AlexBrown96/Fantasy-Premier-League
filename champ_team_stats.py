@@ -2,32 +2,12 @@ import pandas as pd
 import numpy as np
 import os
 
-teams_dir = '../FPL_ML_2020/champ_promoted_stats'
+teams_dir = '../Fantasy-Premier-League/champ_promoted_stats'
 
 # For all the players listed in the data/year directory, train the model...
-Records = []
+
 heads = ["Player", "Pos", "MP", "Min", "Gls",
          "Ast", "PK", "PKatt", "CrdY", "CrdR", "Starts"]
-for subdir, dirs, files in os.walk(teams_dir):
-    for file in files:
-        if file == "stats.csv":
-            team_data = pd.read_csv(subdir+"/stats.csv", sep=",")
-            team_data["Player"] = [i.split(str("\\"), 1) for i in team_data["Player"]]
-            team_data["Player"] = [str(i[0]) for i in team_data["Player"]]
-            print(team_data.head())
-
-
-
-
-breakpoint()
-# TODO automate the selected team with the master function
-# Clean_sheets = pd.DataFrame(data={"Team":["Leeds_United", "West_Brom","Fulham"],
-#                                   "CS":[22, 14, 17]})
-# a = Clean_sheets["Team"][0].loc
-
-
-
-# league_heads = ["CS"]
 
 
 time_played60 = 1
@@ -60,9 +40,9 @@ def get_pos(player_data):
 
 def clean_sheet_points(pos):
     if pos == 1 or pos == 2:
-        return cs_def_gk * cs
+        return cs_def_gk * clean_sheets
     elif pos == 3:
-        return cs_mid * cs
+        return cs_mid * clean_sheets
     else:
         return 0
 
@@ -85,7 +65,7 @@ def time_points(time, games_played, starts, pos):
             return games_played
         else:
             # clean this up brah
-            p = (games_played * 2) + clean_sheet_points(pos)
+            p = (games_played * 2)
             return p
     else:
         return 0
@@ -111,14 +91,31 @@ def total_points(player_data):
     total -= player_data[8] * yellow_card
     total -= player_data[9] * red_card
     # Add points for clean sheets
+    total += clean_sheet_points(pos)
     if total != total:
         total = 0
-    return player_data[0], round(total * (38/46))
+    return [player_data[0], total]
 
 
+for subdir, dirs, files in os.walk(teams_dir):
+    league_data = np.array(pd.read_csv(teams_dir+"/team_stats.csv"))
+    for file in files:
+        team_name = subdir.replace(teams_dir+"\\", '')
+        team_name = team_name.replace("_", ' ')
+        if file == "stats.csv":
+            team_data = pd.read_csv(subdir+"/stats.csv")
+            team_data["Player"] = [i.split(str("\\"), 1) for i in team_data["Player"]]
+            team_data["Player"] = [str(i[0]) for i in team_data["Player"]]
+            temp_data = league_data[:, 0]
+            team_index = (np.nonzero(temp_data == team_name)[0][0])
+            clean_sheets = league_data[team_index][12]
 
-# ["Player", "Pos", "Starts", "Min", "Gls", "Ast", "PK", "PKatt", "CrdY", "CrdR"]
-# ['Ben White' 'DF'    46     4140.0  1.0    2.0    0.0    0.0     6.0     0.0]
+            a = []
+            team_data = np.array(team_data[heads])
+            # TODO clean this up so that it can be integrated into the team selection script
+            for i in range(len(team_data)):
+                a.append(total_points(team_data[i]))
 
-# points system used in fpl
+            print(a)
+
 

@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from Predicted_points import predicted_points
 import numpy as np
-
+# TODO remove relegated teams
 # Obtain raw player data
 pd_in = pd.read_csv("../FPL_ML_2020/data/2019-20/players_raw.csv")
 player_raw_data = np.array(pd_in)
