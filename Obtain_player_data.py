@@ -55,6 +55,7 @@ for subdir, dirs, files in os.walk(players_dir):
                         print("player {} has been trained".format(web_name), "Accuracy = {} %".format(acc*100))
                         Records.append([web_name, points, n_points, acc, cost, chance_playing_next_round, news,
                                         points_per_game, position, team_code])
+                        print(Records)
                     else:
                         print("player {}'s chance of playing too low".format(web_name))
                 else:

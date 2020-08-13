@@ -7,7 +7,7 @@ teams_dir = '../Fantasy-Premier-League/champ_promoted_stats'
 # For all the players listed in the data/year directory, train the model...
 
 heads = ["Player", "Pos", "MP", "Min", "Gls",
-         "Ast", "PK", "PKatt", "CrdY", "CrdR", "Starts"]
+         "Ast", "PK", "PKatt", "CrdY", "CrdR", "Starts", "MOTM"]
 
 
 time_played60 = 1
@@ -71,7 +71,7 @@ def time_points(time, games_played, starts, pos):
         return 0
 
 
-def total_points(player_data):
+def total_points(player_data, team_name):
     total = 0
     # Get points scored for playing
     time = player_data[3]
@@ -92,11 +92,24 @@ def total_points(player_data):
     total -= player_data[9] * red_card
     # Add points for clean sheets
     total += clean_sheet_points(pos)
+    # Bonus points 3 for MOTM
+    # Forumla from Man City data
+    MOTM = player_data[11]
+    BP = -0.2355*(MOTM**2) + 5.6108*MOTM + 2.2519
+    total += BP
     if total != total:
         total = 0
-    return [player_data[0], total]
+    # Rough price estimate
+    total = total * (38/46)
+    # TODO this is a poor correlation amend please
+    player_price = round((5.7686*total + 40) / 10,  1)
+    if player_price < 40:
+        player_price = 40.0
+    print(player_price)
 
+    return [player_data[0], round(total), round(total), 1, player_price, 100, 'nan', round(total), player_data[1], team_name]
 
+Records = []
 for subdir, dirs, files in os.walk(teams_dir):
     league_data = np.array(pd.read_csv(teams_dir+"/team_stats.csv"))
     for file in files:
@@ -109,13 +122,13 @@ for subdir, dirs, files in os.walk(teams_dir):
             temp_data = league_data[:, 0]
             team_index = (np.nonzero(temp_data == team_name)[0][0])
             clean_sheets = league_data[team_index][12]
-
-            a = []
             team_data = np.array(team_data[heads])
             # TODO clean this up so that it can be integrated into the team selection script
             for i in range(len(team_data)):
-                a.append(total_points(team_data[i]))
+                Records.append(total_points(team_data[i], int(str(team_index)+"01")))
 
-            print(a)
-
-
+df = pd.DataFrame([i for i in Records],
+                  columns=['name', 'predicted_points','recent_points',
+                           'accuracy', 'player_recent_value', 'chance_playing_next_round',
+                           'news', 'points_per_game', 'position', 'team_code'])
+df.to_csv('Champ_player_predictions.csv', index=False)
