@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 
 # Get the next upcoming fixture in the gw for the team
-fixture_data = pd.read_csv("../FPL_ML_2020/data/2019-20/fixtures.csv")
-team_data = pd.read_csv("../FPL_ML_2020/data/2019-20/teams.csv")
+fixture_data = pd.read_csv("../Fantasy-Premier-League/data/2019-20/fixtures.csv")
+team_data = pd.read_csv("../Fantasy-Premier-League/data/2019-20/teams.csv")
 np_team_data = np.array(team_data)
 
 

@@ -7,6 +7,7 @@ trained_player_data = pd.read_csv("Player_predictions.csv")
 
 # TODO add bias for the upcoming fixtures and for the model accuracy produced by the machine learning algorithm
 
+
 def select_team(expected_scores, prices, positions, clubs, total_budget=100, sub_factor=0.2):
     num_players = len(expected_scores)
     model = pulp.LpProblem("Constrained value maximisation", pulp.LpMaximize)
@@ -86,13 +87,6 @@ decisions, captain_decisions, sub_decisions= select_team(expected_scores.values,
                                            clubs.values)
 
 
-# for i in range(trained_player_data.shape[0]):
-#     if decisions[i].value() != 0:
-#         print("**{}** Points = {}, Price = {}".format(names[i], expected_scores[i], prices[i]))
-#
-# for i in range(trained_player_data.shape[0]):
-#     if captain_decisions[i].value() == 1:
-#         print("**CAPTAIN: {}** Points = {}, Price = {}".format(names[i], expected_scores[i], prices[i]))
 
 for i in range(trained_player_data.shape[0]):
     if decisions[i].value() != 0:
