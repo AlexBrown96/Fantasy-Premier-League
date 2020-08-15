@@ -105,7 +105,7 @@ def total_points(player_data, team_name):
     player_price = round((5.7686*total + 40) / 10,  1)
     if player_price < 40:
         player_price = 40.0
-    print(player_price)
+    #print(player_price)
 
     return [player_data[0], round(total), round(total), 1, player_price, 100, 'nan', round(total), player_data[1], team_name]
 
@@ -132,3 +132,4 @@ df = pd.DataFrame([i for i in Records],
                            'accuracy', 'player_recent_value', 'chance_playing_next_round',
                            'news', 'points_per_game', 'position', 'team_code'])
 df.to_csv('Champ_player_predictions.csv', index=False)
+print(df)

@@ -40,7 +40,7 @@ Records = []
 for subdir, dirs, files in os.walk(players_dir):
     for file in files:
         if file == "gw.csv":
-            training_counts = 1
+            training_counts = 10
             n = 12
 
             data = pd.read_csv(subdir+"/gw.csv", sep=",")
@@ -55,15 +55,15 @@ for subdir, dirs, files in os.walk(players_dir):
                         print("player {} has been trained".format(web_name), "Accuracy = {} %".format(acc*100))
                         Records.append([web_name, points, n_points, acc, cost, chance_playing_next_round, news,
                                         points_per_game, position, team_code])
-                        print(Records)
+                        #print(Records)
                     else:
                         print("player {}'s chance of playing too low".format(web_name))
                 else:
                     print("player {}'s team has been RELEGATED HAHAHA".format(web_name))
 
-# df = pd.DataFrame([i for i in Records],
-#                            columns=['name', 'predicted_points','recent_points', 'accuracy', 'player_recent_value', 'chance_playing_next_round', 'news', 'points_per_game', 'position', 'team_code'])
-#df.to_csv('Player_predictions.csv', index=False)
+df = pd.DataFrame([i for i in Records],
+                            columns=['name', 'predicted_points','recent_points', 'accuracy', 'player_recent_value', 'chance_playing_next_round', 'news', 'points_per_game', 'position', 'team_code'])
+df.to_csv('Player_predictions.csv', index=False)
 
 
 def get_position(element_type):

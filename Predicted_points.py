@@ -4,15 +4,14 @@ import numpy as np
 import sklearn
 from sklearn import linear_model
 import Fixture_difficulty as fd
-from sklearn.linear_model import LinearRegression
+from sklearn import preprocessing
 
 
 def predicted_points(team_code, data, training_counts = 10, n=3):
     # Features used to train the model
-    headers = ["total_points", "assists", "clean_sheets", "creativity",
-               "goals_conceded", "goals_scored", "ict_index", "influence",
-               "minutes", "team_a_score", "team_h_score", "threat",
-               "value", "was_home", "saves", "round"]
+    headers = ["total_points", "assists", "clean_sheets",
+               "goals_conceded", "goals_scored", "minutes", "team_a_score", "team_h_score",
+               "was_home", "saves", "round"]
     # Work out the fixture difficulty rating so that it can be added to the model
     team_dif_data = fd.fixture_dif_data(team_code)
     temp = []
@@ -25,9 +24,10 @@ def predicted_points(team_code, data, training_counts = 10, n=3):
     team_dif_data = pd.DataFrame(temp, columns=["fixture_difficulty"])
     headers.append("fixture_difficulty")
     predicted = "total_points"
-
     player_data = pd.concat([player_data, team_dif_data], axis=1)
     # print(player_data.head())
+    #for col in player_data[headers]:
+    #   player_data[col] = sklearn.preprocessing.robust_scale(player_data[col])
     x = np.array(player_data.drop([predicted], 1))
     # Array of labels
     y = np.array(player_data[predicted])
@@ -93,11 +93,59 @@ def predicted_points(team_code, data, training_counts = 10, n=3):
     # print(linear.predict(np.array([predicted_data_set])))
     if acc > -1 and acc <= 1:
         points = float(linear.predict(np.array([predicted_data_set])))
+        n_points = float(linear.predict(np.array([n_predicted_data_set])))
     else:
         points = 0
-    n_points = float(linear.predict(np.array([n_predicted_data_set])))
-
+        n_points = 0
 
     return points, n_points, acc
 
+# TODO create generic ML model to predict points based on position, team, was_home then predict clean sheets ect
 
+
+def organise_data(merged_gw_data):
+    # headers pos, min, team, was_home, x_cleansheet, xG, xA
+    '''
+    name,assists,bonus,bps,clean_sheets,
+    creativity,element,fixture,goals_conceded,
+    goals_scored,ict_index,influence,
+    kickoff_time,minutes,opponent_team,own_goals,
+    penalties_missed,penalties_saved,red_cards,
+    round,saves,selected,team_a_score,team_h_score,
+    threat,total_points,transfers_balance,transfers_in,
+    transfers_out,value,was_home,yellow_cards,GW
+    '''
+    # First get the player's team, position and fixture difficulties
+
+    # Modify the input data based on the selected features
+    headers = []
+    # Drop the predicted points label to produce x and y
+    x = np.array(1)
+    y = np.array(1)
+    return Organised_data
+
+
+training_counts = 1
+
+
+def train_model(data):
+    best_acc = 0
+    for counts in range(training_counts):
+        x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x, y, test_size=0.2)
+
+        linear = linear_model.LinearRegression()
+        linear.fit(x_train, y_train)
+        acc = linear.score(x_test, y_test)
+
+        if best_acc <= acc:
+            best_acc = acc
+    return linear, acc
+
+# Pass data set into organise function
+# Organised_data = organise_data(___.csv)
+
+# Train the model based on this data
+# trained_model_output = train_model(Organised_data)
+
+# Use next game week predictions to predict total points
+# points = float(linear.predict(np.array([new data])))

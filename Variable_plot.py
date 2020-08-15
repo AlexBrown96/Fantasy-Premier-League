@@ -1,17 +1,12 @@
 import pandas as pd
-import numpy as np
-import sklearn
-from sklearn import linear_model
-import pickle
 import matplotlib.pyplot as pyplot
 from matplotlib import style
 
 
 data = pd.read_csv("../FPL_Machine_learning/Fantasy-Premier-League-master/data/2019-20/players/Kevin_De Bruyne_215/gw.csv", sep=",")
-data = data[["total_points", "assists", "clean_sheets", "creativity",
-             "goals_conceded", "goals_scored", "ict_index", "influence",
-             "minutes", "team_a_score", "team_h_score", "threat", "value", "was_home",
-             "yellow_cards", "saves"]]
+heads = ["total_points", "assists", "clean_sheets",
+               "goals_conceded", "goals_scored", "minutes", "was_home", "saves", "round", "opponent_team"]
+data = data[heads]
 predicted = "total_points"
 def plot_player_data(predicted="assists"):
     style.use("ggplot")
@@ -20,4 +15,12 @@ def plot_player_data(predicted="assists"):
     pyplot.ylabel(predicted)
     pyplot.show()
 
-plot_player_data(predicted)
+
+values = data.values
+i = 1
+for head in heads:
+    pyplot.subplot(len(heads), 1, i)
+    pyplot.plot(values[:, heads.index(head)])
+    pyplot.title(head, y=0.5, loc="right")
+    i += 1
+pyplot.show()
