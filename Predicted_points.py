@@ -7,7 +7,7 @@ import Fixture_difficulty as fd
 from sklearn import preprocessing
 
 
-def predicted_points(team_code, data, training_counts = 10, n=3):
+def predicted_points(team_code, data, training_counts=10, n=3):
     # Features used to train the model
     headers = ["total_points", "assists", "clean_sheets",
                "goals_conceded", "goals_scored", "minutes", "team_a_score", "team_h_score",
@@ -25,9 +25,7 @@ def predicted_points(team_code, data, training_counts = 10, n=3):
     headers.append("fixture_difficulty")
     predicted = "total_points"
     player_data = pd.concat([player_data, team_dif_data], axis=1)
-    # print(player_data.head())
-    #for col in player_data[headers]:
-    #   player_data[col] = sklearn.preprocessing.robust_scale(player_data[col])
+
     x = np.array(player_data.drop([predicted], 1))
     # Array of labels
     y = np.array(player_data[predicted])
@@ -44,11 +42,6 @@ def predicted_points(team_code, data, training_counts = 10, n=3):
             # acc = linear.score(x_train, y_train)
             if best_acc <= acc:
                 best_acc = acc
-
-        # with open("Jack_Grelish_model.pickle", "wb") as f:
-        #     pickle.dump(linear, f)
-        # print(best_acc)
-        # print(best_acc)
         return linear, acc
 
     def best_fit_slope_and_intercept(xs, ys):

@@ -18,7 +18,7 @@ def main():
     if len(sys.argv) != 2:
         print("Usage: python teams_scraper.py <team_id>. Eg: python teams_scraper.py 5000")
         sys.exit(1)
-    season = "19_20"
+    season = "20_21"
     output_folder = "team_" + sys.argv[1] + "_data" + season
     team_id = int(sys.argv[1])
     if not os.path.exists(output_folder):

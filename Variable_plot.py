@@ -3,10 +3,10 @@ import matplotlib.pyplot as pyplot
 from matplotlib import style
 
 
-data = pd.read_csv("../FPL_Machine_learning/Fantasy-Premier-League-master/data/2019-20/players/Kevin_De Bruyne_215/gw.csv", sep=",")
+data = pd.read_csv("C:/Users/Alext/PycharmProjects/Fantasy-Premier-League/data/2018-19/gws/merged_gw.csv", encoding='latin-1')
 heads = ["total_points", "assists", "clean_sheets",
-               "goals_conceded", "goals_scored", "minutes", "was_home", "saves", "round", "opponent_team"]
-data = data[heads]
+               "goals_conceded", "goals_scored", "minutes", "was_home", "saves", "round"]
+data = data[heads][:1000]
 predicted = "total_points"
 def plot_player_data(predicted="assists"):
     style.use("ggplot")
