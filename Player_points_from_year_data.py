@@ -5,17 +5,21 @@ import pandas as pd
 import numpy as np
 import pickle
 import time
+import Fixture_difficulty as fd
+
 start_time = time.time()
 
 pd.set_option("display.max_columns", None)
 pd_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/players_raw.csv")
 us_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/understat/understat_player.csv")
+fd_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/fixtures.csv")
 us_in["player_name"] = [(''.join(filter(lambda j: j.isalpha(), i))) for i in us_in["player_name"]]
 player_raw_data = np.array(pd_in)
 understat_raw_data = np.array(us_in)
 pd_heads = ["element_type", "team", "now_cost"]
 us_heads = ["games", "xG", "xA"]
 
+data_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/gws/merged_gw.csv")
 
 
 def selected_stats(data, heads, row_index):
@@ -105,20 +109,18 @@ def train_model(x, y):
             best_acc = acc
             best_model = linear
         print("training count {}, time elapsed: {}, accuracy = {}".format(counts, time.time()-start_time, best_acc))
-    print("Training time of data, for {} training count(s): {}".format(training_counts, time.time()-start_time))
+    print("Training time model data, for {} training count(s): {}".format(training_counts, time.time()-start_time))
     return best_model
 
 
 # Pass data set into organise function
 # Organised_data = organise_data(___.csv)
-data_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/gws/merged_gw.csv")
 x, y = organise_data(data_in)
 # Train the model based on this data
 model = train_model(x,y)
 pickle.dump(model, open("general_model.p", "wb"))
-# trained_model_output = train_model(Organised_data)
 
-# Use next game week predictions to predict total points
-# points = float(linear.predict(np.array([new data])))
+
+
 
 

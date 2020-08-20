@@ -3,8 +3,21 @@ import numpy as np
 import os
 
 teams_dir = '../Fantasy-Premier-League/champ_promoted_stats'
-
+Prem_players_list = pd.read_csv("../Fantasy-Premier-League/data/2020-21/cleaned_players.csv")
 # For all the players listed in the data/year directory, train the model...
+
+# Find champ players in prem players list for next season
+Prem_players_list["name"] = ["{} {}".format(x, y) for x,y in list(zip(Prem_players_list["first_name"], Prem_players_list["second_name"]))]
+
+
+def get_price(name):
+    temp_data = (np.array(Prem_players_list))[:, -1]
+    if name in temp_data:
+        player_index = (np.nonzero(Prem_players_list["name"] == name)[0][0])
+        player_price = (np.array(Prem_players_list))[player_index][17]
+        return player_price
+    else:
+        return 40
 
 heads = ["Player", "Pos", "MP", "Min", "Gls",
          "Ast", "PK", "PKatt", "CrdY", "CrdR", "Starts", "MOTM"]
@@ -100,14 +113,17 @@ def total_points(player_data, team_name):
     if total != total:
         total = 0
     # Rough price estimate
-    total = total * (38/46)
-    # TODO this is a poor correlation amend please
-    player_price = round((5.7686*total + 40) / 10,  1)
-    if player_price < 40:
-        player_price = 40.0
-    #print(player_price)
+    if games_played > 10:
+        total = total / games_played
+    else:
+        total = 0
+    player_price = get_price(player_data[0])
+    if games_played > 15:
+        playing_chance = games_played/46
+    else:
+        playing_chance = 0
 
-    return [player_data[0], round(total), round(total), 1, player_price, 100, 'nan', round(total), player_data[1], team_name]
+    return [player_data[0], round(total), round(total), 1, player_price, playing_chance, 'nan', round(total), player_data[1], team_name]
 
 Records = []
 for subdir, dirs, files in os.walk(teams_dir):
@@ -123,7 +139,6 @@ for subdir, dirs, files in os.walk(teams_dir):
             team_index = (np.nonzero(temp_data == team_name)[0][0])
             clean_sheets = league_data[team_index][12]
             team_data = np.array(team_data[heads])
-            # TODO clean this up so that it can be integrated into the team selection script
             for i in range(len(team_data)):
                 Records.append(total_points(team_data[i], int(str(team_index)+"01")))
 
@@ -132,4 +147,3 @@ df = pd.DataFrame([i for i in Records],
                            'accuracy', 'player_recent_value', 'chance_playing_next_round',
                            'news', 'points_per_game', 'position', 'team_code'])
 df.to_csv('Champ_player_predictions.csv', index=False)
-print(df)

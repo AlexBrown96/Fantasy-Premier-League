@@ -77,7 +77,6 @@ def select_team(expected_scores, prices, positions, clubs, total_budget=100, sub
 
 
 expected_scores = trained_player_data["predicted_points"]
-n_expected_scores = trained_player_data["recent_points"]
 prices = trained_player_data["player_recent_value"] / 10
 positions =trained_player_data["position"]
 names = trained_player_data["name"]

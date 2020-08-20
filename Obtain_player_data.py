@@ -40,17 +40,18 @@ Records = []
 for subdir, dirs, files in os.walk(players_dir):
     for file in files:
         if file == "gw.csv":
-            training_counts = 10
-            n = 12
+            training_counts = 1000
+            # Minimum games played
+            n = 15
 
             data = pd.read_csv(subdir+"/gw.csv", sep=",")
-            if len(data["round"]) > 12:
+            if len(data["round"]) >= n:
                 player_id = (''.join(filter(lambda i: i.isdigit(), subdir))).replace('201920', '')
                 # From raw data
                 web_name, chance_playing_next_round, news, points_per_game, position, team_code, cost = stats_raw(int(player_id))
                 if team_code != np.int64(18) or team_code != np.int64(14) or team_code != np.int64(3):
                 # From training data
-                    if chance_playing_next_round != str(0):
+                    if chance_playing_next_round != str(0000):
                         points, n_points, acc = predicted_points(team_code, data, training_counts, n)
                         print("player {} has been trained".format(web_name), "Accuracy = {} %".format(acc*100))
                         Records.append([web_name, points, n_points, acc, cost, chance_playing_next_round, news,
