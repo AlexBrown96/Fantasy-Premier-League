@@ -45,7 +45,7 @@ def organise_data(merged_gw_data):
     transfers_out,value,was_home,yellow_cards,GW
     '''
     #merged_gw_data = merged_gw_data[:200]
-    # TODO get the player's id
+
     id = merged_gw_data["name"]
     merged_gw_data["id"] = [(''.join(filter(lambda j: j.isdigit(), i))) for i in merged_gw_data["name"]]
     merged_gw_data["name"] = [(''.join(filter(lambda j: j.isalpha(), i))) for i in merged_gw_data["name"]]

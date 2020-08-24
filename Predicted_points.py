@@ -4,92 +4,125 @@ import numpy as np
 import sklearn
 from sklearn import linear_model
 import Fixture_difficulty as fd
-from sklearn import preprocessing
+from gameweek import get_recent_gameweek_id
+gameweek = get_recent_gameweek_id()
+fixture_data = pd.read_csv("../Fantasy-Premier-League/data/2019-20/fixtures.csv")
 
 
-def predicted_points(team_code, data, training_counts=10, n=3):
+def predicted_points(team_code, data, training_counts=10, player_name="", past_position="2"):
     # Features used to train the model
+    # TODO current team code
     headers = ["total_points", "assists", "clean_sheets",
-               "goals_conceded", "goals_scored", "minutes", "team_a_score", "team_h_score",
-               "was_home", "saves", "round"]
+               "goals_scored", "was_home", "saves", "value"]
     # Work out the fixture difficulty rating so that it can be added to the model
-    team_dif_data = fd.fixture_dif_data(team_code)
-    temp = []
+    team_dif_data = fd.fixture_dif_data(team_code, fixture_data)
+    fd_temp = []
     for k, v in enumerate(data["round"]):
         # Get the indexes of rounds played
         if v in team_dif_data[1]:
             idx = team_dif_data[1].index(v)
-            temp.append(team_dif_data[0][idx])
+            fd_temp.append(team_dif_data[0][idx])
+    # Add position data
+    pos_temp = []
+    for i in range(len(data["round"])):
+        pos_temp.append(past_position)
+    #
     player_data = data[headers]
-    team_dif_data = pd.DataFrame(temp, columns=["fixture_difficulty"])
+    team_dif_data = pd.DataFrame(fd_temp, columns=["fixture_difficulty"])
     headers.append("fixture_difficulty")
-    predicted = "total_points"
     player_data = pd.concat([player_data, team_dif_data], axis=1)
-
-    x = np.array(player_data.drop([predicted], 1))
+    #
+    pos_list_data = pd.DataFrame(pos_temp, columns=["position"])
+    headers.append("position")
+    player_data = pd.concat([player_data, pos_list_data], axis=1)
+    x = np.array(player_data.drop(["total_points"], 1))
     # Array of labels
-    y = np.array(player_data[predicted])
-
-    def train_model():
-        best_acc = 0
-        for counts in range(training_counts):
-            x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x, y, test_size=0.2)
-
-            linear = linear_model.LinearRegression()
-            linear.fit(x_train, y_train)
-
-            acc = linear.score(x_test, y_test)
-            # acc = linear.score(x_train, y_train)
-            if best_acc <= acc:
-                best_acc = acc
-        return linear, acc
-
-    def best_fit_slope_and_intercept(xs, ys):
-        m = (((mean(xs)*mean(ys)) - mean(xs*ys)) /
-             ((mean(xs)*mean(xs)) - mean(xs*xs)))
-
-        b = mean(ys) - m*mean(xs)
-
-        return m, b
-    # TODO For team_a and team_h you could use the Fixture difficulty
-    def predicted_item_point(plot_item, length):
-        # Create x and y values for the item to extrapolate the next point
-        ys = np.array(player_data[plot_item][:length], dtype=np.float64)
-        xs = np.array((range(length)), dtype=np.float64)
-        ## plt.plot(xs, ys)
-        # Get the gradient and intercept values of the best fit line
-        m, b = best_fit_slope_and_intercept(xs, ys)
-        ## Create points for the best fit line
-        # regression_line = [(m*i)+b for i in xs]
-        # Plot the best fit line
-        # plt.plot(xs, regression_line)
-        # Make prediction based off best fit line creating another point at the end of the data set
-        predict_x = xs[-1]+1
-        predict_y = (m*predict_x)+b
-        return predict_y
-        # plt.scatter(predict_x, predict_y, color='r')
-        # plt.show()
-
-    predicted_data_set = []
-    n_predicted_data_set = []
-    headers.remove(predicted)
-    for i in headers:
-        # Predictions for the whole data set
-        predict_y = predicted_item_point(i, len(y))
-        predicted_data_set.append(predict_y)
-        # Predictions for the nth data set (Recent games)
-        predict_y = predicted_item_point(i, n)
-        n_predicted_data_set.append(predict_y)
+    y = np.array(player_data["total_points"])
+    linear, acc = train_model(x, y, training_counts)
+    pred, value, pos = feature_prediction(linear, data, team_code, player_name)
+    return pred, acc, value, pos
 
 
-    linear, acc = train_model()
-    # print(linear.predict(np.array([predicted_data_set])))
-    if acc > -1 and acc <= 1:
-        points = float(linear.predict(np.array([predicted_data_set])))
-        n_points = float(linear.predict(np.array([n_predicted_data_set])))
+def train_model(x_data, y_data, n=1):
+    best_acc = 0
+    models = [[],[]]
+    for counts in range(n):
+        x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x_data, y_data, test_size=0.2)
+
+        linear = linear_model.LinearRegression()
+        linear.fit(x_train, y_train)
+
+        acc = linear.score(x_test, y_test)
+        # acc = linear.score(x_train, y_train)
+        models[0].append(acc)
+        models[1].append(linear)
+    best_acc = max(models[0])
+    best_linear = models[1][models[0].index(best_acc)]
+    return best_linear, best_acc
+
+
+def selected_stats(data, heads, row_index):
+    return data[heads].loc[row_index]
+
+
+us_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/understat/understat_player.csv")
+us_in["player_name"] = [(''.join(filter(lambda j: j.isalpha(), i))) for i in us_in["player_name"]]
+understat_raw_data = np.array(us_in)
+current_player_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players_raw.csv")
+current_player_data["name"] = [(''.join(filter(lambda j: j.isalpha(), "{}{}".format(x,y)))) for x,y in
+                               list(zip(current_player_data["first_name"], current_player_data["second_name"]))]
+
+
+
+def feature_prediction(linear, data, team_code, player_name):
+    # work out if the player is actually playing this season
+    headers = ["assists", "clean_sheets",
+               "goals_scored", "was_home", "saves", "value"]
+    # Get last seasons data
+
+    # Assists and goals scored from understat
+    us_heads = ["xG", "xA", "games"]
+    pd_heads = ["clean_sheets", "saves"]
+    # player_name.replace(" ", "")
+    player_id_data_us = understat_raw_data[:, 1]
+    try:
+        player_index_us = (np.nonzero(player_id_data_us == player_name)[0][0])
+    except:
+        # TODO if xG and xA not found and player is mid/fwd take the team xG and xA
+        xG = 0
+        xA = 0
     else:
-        points = 0
-        n_points = 0
+        extra_data_us = selected_stats(us_in, us_heads, player_index_us)
+        games = np.array(extra_data_us["games"])
+        xG = np.array(extra_data_us["xG"]) / games
+        xA = np.array(extra_data_us["xA"]) / games
+    # TODO predict clean sheets and saves from fixture difficulty
+    games = len(data["saves"])
+    saves = np.sum(np.array(data["saves"])) / games
+    cs = np.sum(np.array(data["clean_sheets"])) / games
 
-    return points, n_points, acc
+    # TODO get was_home from fixture list
+    # Get gameweek
 
+    fixture_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/fixtures.csv")
+    team_a = np.array(fixture_data["team_a"])[gameweek*20:(gameweek*20)+20]
+    team_h = np.array(fixture_data["team_h"])[gameweek*20:(gameweek*20)+20]
+    team_a_index = (np.nonzero(team_a == team_code)[0][0])
+    team_h_index = (np.nonzero(team_h == team_code)[0][0])
+    if team_a_index > team_h_index:
+        was_home = True
+    else:
+        was_home = False
+    # Value from current data
+    temp = np.array(current_player_data)
+    player_index_cp = (np.nonzero(np.array(current_player_data["name"]) == player_name)[0][0])
+    value = selected_stats(current_player_data, ["now_cost", "element_type"], player_index_cp)["now_cost"]
+    pos = selected_stats(current_player_data, ["now_cost", "element_type"], player_index_cp)["element_type"]
+    fixture_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/fixtures.csv")
+    fixture_dif = (fd.fixture_dif_data(team_code, fixture_data))[0][gameweek]
+    # Predictions
+    # TODO could this be done for multiple future gameweeks eg 3 gws
+    predictions = [xA, cs, xG, was_home, saves, value, fixture_dif, pos]
+    points = float(linear.predict(np.array([predictions])))
+
+    return points, value, pos

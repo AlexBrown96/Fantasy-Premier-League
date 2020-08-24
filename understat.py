@@ -50,7 +50,7 @@ def parse_epl_data(outfile_base):
     player_frame.to_csv(os.path.join(outfile_base, 'understat_player.csv'), index=False)
 
 def main():
-    parse_epl_data('data/2019-20/understat')
+    parse_epl_data('data/2020-21/understat')
 
 if __name__ == '__main__':
     main()

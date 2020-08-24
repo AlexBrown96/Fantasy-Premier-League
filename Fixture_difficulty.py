@@ -26,7 +26,7 @@ def id_to_team_data(id):
 
 # # Not sure when this is update so may have to change in later game weeks
 # Get a generic gameweek (2019-2020 gw 1)
-def fixture_dif_data(team_code):
+def fixture_dif_data(team_code, fixture_data):
     dif_home = [[],[]]
     # fixture_data = pd.read_csv("../FPL_ML_2020/data/2019-20/fixtures.csv")
     team_h = fixture_data["team_h"]

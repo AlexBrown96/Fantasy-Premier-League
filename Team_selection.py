@@ -2,8 +2,8 @@ import pandas as pd
 import pulp
 import numpy as np
 trained_player_data = pd.read_csv("Player_predictions.csv")
-trained_player_data2 = pd.read_csv("Champ_player_predictions.csv")
-trained_player_data = pd.concat([trained_player_data, trained_player_data2], axis=0, ignore_index=True)
+#trained_player_data2 = pd.read_csv("Champ_player_predictions.csv")
+#trained_player_data = pd.concat([trained_player_data, trained_player_data2], axis=0, ignore_index=True)
 
 # Code taken from https://github.com/nuebar/forecasting-fantasy-football
 # nuebar's code:
@@ -75,13 +75,14 @@ def select_team(expected_scores, prices, positions, clubs, total_budget=100, sub
 
     return decisions, captain_decisions, sub_decisions
 
-
-expected_scores = trained_player_data["predicted_points"]
-prices = trained_player_data["player_recent_value"] / 10
-positions =trained_player_data["position"]
-names = trained_player_data["name"]
+accuracy = trained_player_data["acc"]
+expected_scores = trained_player_data["points"]
+trained_player_data["value"] = [i/10 for i in trained_player_data["value"]]
+prices = trained_player_data["value"]
+positions = trained_player_data["pos"]
+names = trained_player_data["web_name"]
 clubs = trained_player_data["team_code"]
-accuracy = trained_player_data["accuracy"]
+
 
 decisions, captain_decisions, sub_decisions= select_team(expected_scores.values,
                                            prices.values,
@@ -92,17 +93,20 @@ decisions, captain_decisions, sub_decisions= select_team(expected_scores.values,
 
 for i in range(trained_player_data.shape[0]):
     if decisions[i].value() != 0:
-        print("**{}** Points = {}, Price = {}, Accuracy = {}".format(names[i], expected_scores[i], prices[i], accuracy[i]))
+        print("**{}** Points = {}, Price = {}, Accuracy = {}, position = {}".format
+              (names[i], expected_scores[i], prices[i], accuracy[i], positions[i]))
 print()
 print("Subs:")
 # print results
 for i in range(trained_player_data.shape[0]):
     if sub_decisions[i].value() == 1:
-        print("**{}** Points = {}, Price = {}, Accuracy = {}".format(names[i], expected_scores[i], prices[i], accuracy[i]))
+        print("**{}** Points = {}, Price = {}, Accuracy = {}, position = {}".format
+              (names[i], expected_scores[i], prices[i], accuracy[i], positions[i]))
 
 print()
 print("Captain:")
 # print results
 for i in range(trained_player_data.shape[0]):
     if captain_decisions[i].value() == 1:
-        print("**{}** Points = {}, Price = {}, Accuracy = {}".format(names[i], expected_scores[i], prices[i], accuracy[i]))
+        print("**{}** Points = {}, Price = {}, Accuracy = {}, position = {}".format
+              (names[i], expected_scores[i], prices[i], accuracy[i], positions[i]))
