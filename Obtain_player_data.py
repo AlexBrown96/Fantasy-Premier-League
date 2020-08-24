@@ -42,9 +42,9 @@ Records = []
 for subdir, dirs, files in os.walk(players_dir):
     for file in files:
         if file == "gw.csv":
-            training_counts = 250
+            training_counts = 10
             # Minimum games played
-            min_games = 5
+            min_games = 15
 
             data = pd.read_csv(subdir+"/gw.csv", sep=",")
             player_id = (''.join(filter(lambda i: i.isdigit(), subdir))).replace('201920', '')

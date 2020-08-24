@@ -20,7 +20,7 @@ def get_data(url):
     return scripts
 
 def get_epl_data():
-    scripts = get_data("https://understat.com/league/EPL/2019")
+    scripts = get_data("https://understat.com/league/EPL/2020")
     teamData = {}
     playerData = {}
     for script in scripts:
@@ -50,7 +50,7 @@ def parse_epl_data(outfile_base):
     player_frame.to_csv(os.path.join(outfile_base, 'understat_player.csv'), index=False)
 
 def main():
-    parse_epl_data('data/2020-21/understat')
+    parse_epl_data('../data/2020-21/understat')
 
 if __name__ == '__main__':
     main()

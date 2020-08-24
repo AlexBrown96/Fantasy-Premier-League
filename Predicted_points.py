@@ -13,7 +13,9 @@ def predicted_points(team_code, data, training_counts=10, player_name="", past_p
     # Features used to train the model
     # TODO current team code
     headers = ["total_points", "assists", "clean_sheets",
-               "goals_scored", "was_home", "saves", "value"]
+               "goals_scored", "was_home", "saves", "ict_index", "value"]
+    # Sort out selected to a rough percentage
+    #data["selected"] = [i/67470 for i in data["selected"]]
     # Work out the fixture difficulty rating so that it can be added to the model
     team_dif_data = fd.fixture_dif_data(team_code, fixture_data)
     fd_temp = []
@@ -77,7 +79,7 @@ current_player_data["name"] = [(''.join(filter(lambda j: j.isalpha(), "{}{}".for
 def feature_prediction(linear, data, team_code, player_name):
     # work out if the player is actually playing this season
     headers = ["assists", "clean_sheets",
-               "goals_scored", "was_home", "saves", "value"]
+               "goals_scored", "was_home", "saves", "value", "selected"]
     # Get last seasons data
 
     # Assists and goals scored from understat
@@ -96,15 +98,23 @@ def feature_prediction(linear, data, team_code, player_name):
         games = np.array(extra_data_us["games"])
         xG = np.array(extra_data_us["xG"]) / games
         xA = np.array(extra_data_us["xA"]) / games
-    # TODO predict clean sheets and saves from fixture difficulty
     games = len(data["saves"])
     saves = np.sum(np.array(data["saves"])) / games
     cs = np.sum(np.array(data["clean_sheets"])) / games
-
-    # TODO get was_home from fixture list
     # Get gameweek
 
+    # Values from current data
+    temp = np.array(current_player_data)
+    player_index_cp = (np.nonzero(np.array(current_player_data["name"]) == player_name)[0][0])
+    extra_data = selected_stats(current_player_data, ["now_cost", "element_type", "team", "ict_index"], player_index_cp)
+    value = extra_data["now_cost"]
+    pos = extra_data["element_type"]
+    team_code = extra_data["team"]
+    # TODO find out why this is very high for some players
+    ict = extra_data["ict_index"]
     fixture_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/fixtures.csv")
+    fixture_dif = (fd.fixture_dif_data(team_code, fixture_data))[0][gameweek]
+    # Get new team code
     team_a = np.array(fixture_data["team_a"])[gameweek*20:(gameweek*20)+20]
     team_h = np.array(fixture_data["team_h"])[gameweek*20:(gameweek*20)+20]
     team_a_index = (np.nonzero(team_a == team_code)[0][0])
@@ -113,16 +123,10 @@ def feature_prediction(linear, data, team_code, player_name):
         was_home = True
     else:
         was_home = False
-    # Value from current data
-    temp = np.array(current_player_data)
-    player_index_cp = (np.nonzero(np.array(current_player_data["name"]) == player_name)[0][0])
-    value = selected_stats(current_player_data, ["now_cost", "element_type"], player_index_cp)["now_cost"]
-    pos = selected_stats(current_player_data, ["now_cost", "element_type"], player_index_cp)["element_type"]
-    fixture_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/fixtures.csv")
-    fixture_dif = (fd.fixture_dif_data(team_code, fixture_data))[0][gameweek]
+
     # Predictions
     # TODO could this be done for multiple future gameweeks eg 3 gws
-    predictions = [xA, cs, xG, was_home, saves, value, fixture_dif, pos]
-    points = float(linear.predict(np.array([predictions])))
 
+    predictions = [xA, cs, xG, was_home, saves, ict, value, fixture_dif, pos]
+    points = float(linear.predict(np.array([predictions])))
     return points, value, pos

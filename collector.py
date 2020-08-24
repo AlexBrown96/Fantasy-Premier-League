@@ -1,7 +1,7 @@
 import os
 import sys
 import csv
-
+print(sys.argv[0])
 def merge_gw(gw, gw_directory):
     merged_gw_filename = "merged_gw.csv"
     gw_filename = "gw" + str(gw) + ".csv"
@@ -54,8 +54,9 @@ def merge_all_gws(num_gws, gw_directory):
         merge_gw(i, gw_directory)
 
 def main():
-    #collect_all_gws(sys.argv[1], sys.argv[2])
-    merge_all_gws(int(sys.argv[1]), sys.argv[2])
+    dir = "C:/Users/Alext/PycharmProjects/Fantasy-Premier-League/data/2020-21"
+    collect_all_gws(0, dir, )
+    #merge_all_gws(int(sys.argv[1]), sys.argv[2])
     #collect_gw(39, sys.argv[1], sys.argv[2])
 
 if __name__ == '__main__':
