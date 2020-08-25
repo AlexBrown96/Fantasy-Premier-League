@@ -13,7 +13,7 @@ def predicted_points(team_code, data, training_counts=10, player_name="", past_p
     # Features used to train the model
     # TODO current team code
     headers = ["total_points", "assists", "clean_sheets",
-               "goals_scored", "was_home", "saves", "ict_index", "value", "minutes"]
+               "goals_scored", "was_home", "saves", "ict_index", "value", "minutes", "bonus"]
     # Sort out selected to a rough percentage
     # Work out the fixture difficulty rating so that it can be added to the model
     team_dif_data = fd.fixture_dif_data(team_code, fixture_data)
@@ -108,10 +108,11 @@ def feature_prediction(linear, data, team_code, player_name):
     player_index_cp = (np.nonzero(np.array(current_player_data["name"]) == player_name)[0][0])
     extra_data = selected_stats(current_player_data,
                                 ["now_cost", "element_type", "team", "ict_index",
-                                 "selected_by_percent", "points_per_game", "minutes"], player_index_cp)
+                                 "selected_by_percent", "points_per_game", "minutes", "bonus"], player_index_cp)
     value = extra_data["now_cost"]
     pos = extra_data["element_type"]
     team_code = extra_data["team"]
+    bonus = extra_data["bonus"] / games
     #selected = extra_data["selected_by_percent"]
     avg_mins = extra_data["minutes"] / games
     # TODO find out why this is very high for some players
@@ -132,8 +133,6 @@ def feature_prediction(linear, data, team_code, player_name):
     # Predictions
     # TODO could this be done for multiple future gameweeks eg 3 gws
 
-    predictions = [xA, cs, xG, was_home, saves, ict, value, fixture_dif, pos, avg_mins]
+    predictions = [xA, cs, xG, was_home, saves, ict, value, avg_mins, bonus, fixture_dif, pos]
     points = float(linear.predict(np.array([predictions])))
-    if points > 10:
-        breakpoint()
     return points, value, pos

@@ -56,7 +56,7 @@ Records = []
 for subdir, dirs, files in os.walk(players_dir):
     for file in files:
         if file == "gw.csv":
-            training_counts = 10000
+            training_counts = 10
             # Minimum games played
             min_games = 14
 
@@ -92,6 +92,3 @@ for subdir, dirs, files in os.walk(players_dir):
 df = pd.DataFrame([i for i in Records],
                             columns=["web_name", "points", "acc", "value", "pos", "team_code"])
 df.to_csv('Player_predictions.csv', index=False)
-
-import subprocess
-subprocess.call(["shutdown", "/s"])

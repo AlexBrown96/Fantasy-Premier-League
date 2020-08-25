@@ -96,21 +96,22 @@ def organise_data(merged_gw_data):
 training_counts = 50
 
 
-def train_model(x, y):
+def train_model(x_data, y_data, n=1):
     best_acc = 0
-    for counts in range(training_counts):
-        x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x, y, test_size=0.2)
+    models = [[], []]
+    for counts in range(n):
+        x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x_data, y_data, test_size=0.15)
 
         linear = linear_model.LinearRegression()
         linear.fit(x_train, y_train)
-        acc = linear.score(x_test, y_test)
 
-        if best_acc <= acc:
-            best_acc = acc
-            best_model = linear
-        print("training count {}, time elapsed: {}, accuracy = {}".format(counts, time.time()-start_time, best_acc))
-    print("Training time model data, for {} training count(s): {}".format(training_counts, time.time()-start_time))
-    return best_model
+        acc = linear.score(x_test, y_test)
+        # acc = linear.score(x_train, y_train)
+        models[0].append(acc)
+        models[1].append(linear)
+    best_acc = max(models[0])
+    best_linear = models[1][models[0].index(best_acc)]
+    return best_linear, best_acc
 
 
 # Pass data set into organise function
