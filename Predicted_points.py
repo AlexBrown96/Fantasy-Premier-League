@@ -13,9 +13,8 @@ def predicted_points(team_code, data, training_counts=10, player_name="", past_p
     # Features used to train the model
     # TODO current team code
     headers = ["total_points", "assists", "clean_sheets",
-               "goals_scored", "was_home", "saves", "ict_index", "value"]
+               "goals_scored", "was_home", "saves", "ict_index", "value", "minutes"]
     # Sort out selected to a rough percentage
-    #data["selected"] = [i/67470 for i in data["selected"]]
     # Work out the fixture difficulty rating so that it can be added to the model
     team_dif_data = fd.fixture_dif_data(team_code, fixture_data)
     fd_temp = []
@@ -38,6 +37,7 @@ def predicted_points(team_code, data, training_counts=10, player_name="", past_p
     headers.append("position")
     player_data = pd.concat([player_data, pos_list_data], axis=1)
     x = np.array(player_data.drop(["total_points"], 1))
+    # <class 'list'>: [0, 0.02631578947368421, 0, True, 0.0, 0.6815789473684211, 55.0, 3, 3.0, 0.1]
     # Array of labels
     y = np.array(player_data["total_points"])
     linear, acc = train_model(x, y, training_counts)
@@ -49,7 +49,7 @@ def train_model(x_data, y_data, n=1):
     best_acc = 0
     models = [[],[]]
     for counts in range(n):
-        x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x_data, y_data, test_size=0.2)
+        x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x_data, y_data, test_size=0.15)
 
         linear = linear_model.LinearRegression()
         linear.fit(x_train, y_train)
@@ -67,7 +67,7 @@ def selected_stats(data, heads, row_index):
     return data[heads].loc[row_index]
 
 
-us_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/understat/understat_player.csv")
+us_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/understat/understat_player.csv", encoding='latin-1')
 us_in["player_name"] = [(''.join(filter(lambda j: j.isalpha(), i))) for i in us_in["player_name"]]
 understat_raw_data = np.array(us_in)
 current_player_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players_raw.csv")
@@ -106,12 +106,16 @@ def feature_prediction(linear, data, team_code, player_name):
     # Values from current data
     temp = np.array(current_player_data)
     player_index_cp = (np.nonzero(np.array(current_player_data["name"]) == player_name)[0][0])
-    extra_data = selected_stats(current_player_data, ["now_cost", "element_type", "team", "ict_index"], player_index_cp)
+    extra_data = selected_stats(current_player_data,
+                                ["now_cost", "element_type", "team", "ict_index",
+                                 "selected_by_percent", "points_per_game", "minutes"], player_index_cp)
     value = extra_data["now_cost"]
     pos = extra_data["element_type"]
     team_code = extra_data["team"]
+    #selected = extra_data["selected_by_percent"]
+    avg_mins = extra_data["minutes"] / games
     # TODO find out why this is very high for some players
-    ict = extra_data["ict_index"]
+    ict = extra_data["ict_index"] / games
     fixture_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/fixtures.csv")
     fixture_dif = (fd.fixture_dif_data(team_code, fixture_data))[0][gameweek]
     # Get new team code
@@ -119,6 +123,7 @@ def feature_prediction(linear, data, team_code, player_name):
     team_h = np.array(fixture_data["team_h"])[gameweek*20:(gameweek*20)+20]
     team_a_index = (np.nonzero(team_a == team_code)[0][0])
     team_h_index = (np.nonzero(team_h == team_code)[0][0])
+
     if team_a_index > team_h_index:
         was_home = True
     else:
@@ -127,6 +132,8 @@ def feature_prediction(linear, data, team_code, player_name):
     # Predictions
     # TODO could this be done for multiple future gameweeks eg 3 gws
 
-    predictions = [xA, cs, xG, was_home, saves, ict, value, fixture_dif, pos]
+    predictions = [xA, cs, xG, was_home, saves, ict, value, fixture_dif, pos, avg_mins]
     points = float(linear.predict(np.array([predictions])))
+    if points > 10:
+        breakpoint()
     return points, value, pos

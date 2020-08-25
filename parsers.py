@@ -62,6 +62,7 @@ def parse_player_gw_history(list_of_gw, base_filename, player_name, Id):
         w.writeheader()
         for gw in list_of_gw:
             w.writerow(gw)
+    breakpoint()
 
 def parse_gw_entry_history(data, outfile_base):
     for gw in data:
