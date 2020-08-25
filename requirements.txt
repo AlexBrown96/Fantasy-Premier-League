@@ -64,6 +64,7 @@ pytz==2019.3
 pywin32==225
 pywinpty==0.5.5
 pyzmq==18.1.0
+pulp==2.3
 qtconsole==4.5.5
 requests==2.22.0
 rsa==4.0

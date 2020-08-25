@@ -3,19 +3,21 @@ import matplotlib.pyplot as pyplot
 from matplotlib import style
 
 
-data = pd.read_csv("C:/Users/Alext/PycharmProjects/Fantasy-Premier-League/data/2018-19/gws/merged_gw.csv", encoding='latin-1')
+data = pd.read_csv("../Fantasy-Premier-League/data/2019-20/gws/merged_gw.csv", encoding='latin-1')
 heads = ["total_points", "assists", "clean_sheets",
-               "goals_conceded", "goals_scored", "minutes", "was_home", "saves", "round"]
-data = data[heads][:1000]
-predicted = "total_points"
+               "goals_conceded", "goals_scored", "minutes", "was_home", "saves", "ict_index"]
+data = data[heads]
+predicted = "goals_scored"
 def plot_player_data(predicted="assists"):
     style.use("ggplot")
-    pyplot.scatter(range(len(data["total_points"])), data[predicted])
-    pyplot.xlabel("gameweek")
+    pyplot.scatter(data["total_points"], data[predicted])
+    pyplot.xlabel("total_points")
     pyplot.ylabel(predicted)
     pyplot.show()
 
+plot_player_data(predicted)
 
+data = data[heads][:100]
 values = data.values
 i = 1
 for head in heads:
