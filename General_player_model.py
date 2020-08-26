@@ -85,9 +85,8 @@ def Organise_data_set(season_data):
     player_data = season_data[heads]
     # Drop the predicted points label to produce x and y
     x = np.array(player_data.drop(["total_points"], 1))
-    y = np.array(player_data)
+    y = np.array(player_data["total_points"])
     print("Organising time of {} rows of player data: {} seconds".format(len(season_data["name"]), time.time()-start_time))
-
     return x, y
 
 ########################################################################################################################
@@ -99,12 +98,12 @@ x, y = Organise_data_set(data_in)
 
 # Save organised data
 
-if x is not None:
-    with open('x.p', "wb") as x_data:
-        pickle.dump(x, x_data, protocol=pickle.HIGHEST_PROTOCOL)
-if y is not None:
-    with open('y.p', "wb") as y_data:
-        pickle.dump(y, y_data, protocol=pickle.HIGHEST_PROTOCOL)
+# if x is not None:
+#     with open('x.p', "wb") as x_data:
+#         pickle.dump(x, x_data, protocol=pickle.HIGHEST_PROTOCOL)
+# if y is not None:
+#     with open('y.p', "wb") as y_data:
+#         pickle.dump(y, y_data, protocol=pickle.HIGHEST_PROTOCOL)
 
 ########################################################################################################################
 
@@ -127,14 +126,14 @@ def train_model(x_data, y_data, training_counts=1):
     print("Accuracy: ", best_acc)
     return best_linear, best_acc
 
-with open('x.p', 'rb') as x:
-    x_data = pickle.load(x)
+#with open('x.p', 'rb') as x:
+    #x_data = pickle.load(x)
 
-with open('y.p', 'rb') as y:
-    y_data = pickle.load(y)
+#with open('y.p', 'rb') as y:
+    #y_data = pickle.load(y)
 
-model = None
-model, acc = train_model(x_data, y_data, 1)
+# model = None
+model, acc = train_model(x, y, 1)
 
 #if model is not None:
 #    with open('General_player_linear_model.p', "wb") as m:
@@ -147,6 +146,7 @@ understat_raw_data = np.array(us_in)
 current_player_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players_raw.csv")
 current_player_data["name"] = [(''.join(filter(lambda j: j.isalpha(), "{}{}".format(x,y)))) for x,y in
                                list(zip(current_player_data["first_name"], current_player_data["second_name"]))]
+
 
 gameweek = 0
 
@@ -211,6 +211,7 @@ def feature_prediction(linear, data, player_name):
     # TODO could this be done for multiple future gameweeks eg 3 gws
     predictions = np.array([pos, avg_mins, value, was_home, ict, xG, xA, bonus, cs, strength, saves])
     points = linear.predict([predictions])
+    breakpoint()
     return points, value, pos
 
 
@@ -221,4 +222,3 @@ data = pd.read_csv("../Fantasy-Premier-League/data/2019-20/players/Aaron_Cresswe
 name = "AaronCresswell"
 points, value, pos = feature_prediction(model, data, name)
 print(points)
-breakpoint()
