@@ -46,6 +46,7 @@ def Organise_data_set(season_data):
         pos_list.append(extra_data["element_type"])
         team_list.append(extra_data["team"])
         cost_list.append(extra_data["now_cost"])
+    print("finished appending data from players")
     for row, val in enumerate(season_data["name"]):
         # Understat data
         val.replace(" ", "")
@@ -70,6 +71,7 @@ def Organise_data_set(season_data):
     season_data["xG"] = xG_list
     season_data["xA"] = xA_list
     season_data["games"] = games_list
+    print("finished appending season data")
     # Fixture difficulty
     strength = []
     for team in season_data["team"]:
@@ -79,7 +81,7 @@ def Organise_data_set(season_data):
     season_data["strength"] = strength
     # Modify the input data based on the selected features
 
-    heads = ["total_points", "pos", "minutes", "team", "now_cost", "was_home", "ict_index", "xG", "xA", "bonus", "clean_sheets", "strength"]
+    heads = ["total_points", "pos", "minutes", "now_cost", "was_home", "ict_index", "xG", "xA", "bonus", "clean_sheets", "strength", "saves"]
     player_data = season_data[heads]
     # Drop the predicted points label to produce x and y
     x = np.array(player_data.drop(["total_points"], 1))
@@ -92,7 +94,8 @@ def Organise_data_set(season_data):
 
 data_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/gws/merged_gw.csv")
 x, y = None, None
-#x, y = Organise_data_set(data_in)
+
+x, y = Organise_data_set(data_in)
 
 # Save organised data
 
@@ -108,6 +111,7 @@ if y is not None:
 def train_model(x_data, y_data, training_counts=1):
     best_acc = 0
     models = [[], []]
+    print("Training model, with {} training counts".format(training_counts))
     for counts in range(training_counts):
         x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x_data, y_data, test_size=0.1)
 
@@ -130,11 +134,11 @@ with open('y.p', 'rb') as y:
     y_data = pickle.load(y)
 
 model = None
-#model, acc = train_model(x_data, y_data, 100)
+model, acc = train_model(x_data, y_data, 1)
 
-if model is not None:
-    with open('General_player_linear_model.p', "wb") as m:
-        pickle.dump(model, m, protocol=pickle.HIGHEST_PROTOCOL)
+#if model is not None:
+#    with open('General_player_linear_model.p', "wb") as m:
+#        pickle.dump(model, m)
 
 ########################################################################################################################
 us_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/understat/understat_player.csv", encoding='latin-1')
@@ -144,15 +148,20 @@ current_player_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/player
 current_player_data["name"] = [(''.join(filter(lambda j: j.isalpha(), "{}{}".format(x,y)))) for x,y in
                                list(zip(current_player_data["first_name"], current_player_data["second_name"]))]
 
+gameweek = 0
+
 
 def feature_prediction(linear, data, player_name):
-    headers = ["assists", "clean_sheets",
-               "goals_scored", "was_home", "saves", "value", "selected"]
+    #headers = ["assists", "clean_sheets",
+               #"goals_scored", "was_home", "saves", "value", "selected"]
+    print("Geting players feature predicions")
+    heads = ["total_points", "pos", "minutes", "team", "now_cost",
+             "was_home", "ict_index", "xG", "xA", "bonus", "clean_sheets", "strength"]
+
     # Get last seasons data
 
     # Assists and goals scored from understat
     us_heads = ["xG", "xA", "games"]
-    pd_heads = ["clean_sheets", "saves"]
     # player_name.replace(" ", "")
     player_id_data_us = understat_raw_data[:, 1]
     try:
@@ -197,10 +206,19 @@ def feature_prediction(linear, data, player_name):
         was_home = True
     else:
         was_home = False
-
+    strength = 4
     # Predictions
     # TODO could this be done for multiple future gameweeks eg 3 gws
-
-    predictions = [xA, cs, xG, was_home, saves, ict, value, avg_mins, bonus, fixture_dif, pos]
-    points = float(linear.predict(np.array([predictions])))
+    predictions = np.array([pos, avg_mins, value, was_home, ict, xG, xA, bonus, cs, strength, saves])
+    points = linear.predict([predictions])
     return points, value, pos
+
+
+#with open('General_player_linear_model.p', 'rb') as m:
+#    model = pickle.load(m)
+
+data = pd.read_csv("../Fantasy-Premier-League/data/2019-20/players/Aaron_Cresswell_376/gw.csv")
+name = "AaronCresswell"
+points, value, pos = feature_prediction(model, data, name)
+print(points)
+breakpoint()
