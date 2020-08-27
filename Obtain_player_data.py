@@ -4,8 +4,16 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 from Predicted_points import predicted_points
 import numpy as np
+from General_player_model import feature_prediction
+import pickle
 # TODO remove relegated teams
 # Obtain raw player data
+try:
+    with open('General_player_linear_model.p', 'rb') as m:
+            model = pickle.load(m)
+except Exception:
+    raise FileNotFoundError
+
 pd_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/players_raw.csv")
 player_raw_data = np.array(pd_in)
 player_ids = player_raw_data[:,26]
@@ -15,7 +23,7 @@ current_player_data["name"] = [(''.join(filter(lambda j: j.isalpha(), "{}{}".for
 cp = np.array(current_player_data)
 
 # Column names for the selected stats from players_raw.csv
-heads = ["web_name", "chance_of_playing_next_round", "news", "points_per_game", "element_type", "team", "now_cost"]
+heads = ["web_name", "chance_of_playing_next_round", "news", "points_per_game", "element_type", "team", "now_cost", "team_code"]
 
 
 def selected_stats(row_index, df_in):
@@ -29,7 +37,7 @@ def stats_raw(id):
         #player_index = (np.nonzero(player_ids[:] == str(id))[0][0])
         player_index = np.where(player_ids[:] == np.int64(id))[0][0]
         extra_data = selected_stats(player_index, pd_in)
-        team_code = extra_data["team"]
+        team_code = extra_data["team_code"]
         past_position = extra_data["element_type"]
     else:
         print("player not found")
@@ -76,12 +84,9 @@ for subdir, dirs, files in os.walk(players_dir):
                         player_index = (np.nonzero(player_id_data == web_name)[0][0])
                         chance_playing = np.array(current_player_data["chance_of_playing_next_round"])[player_index]
                         if chance_playing == "None":
-                            points, acc, value, pos = predicted_points(team_code, data, training_counts, web_name, past_position)
-                            if acc > 0.80:
-                                print("player {} has been trained. Points = {}".format(web_name, points), "Accuracy = {} %".format(acc*100))
-                                Records.append([web_name, points, acc, value, pos, team_code])
-                            else:
-                                print("player {}'s accuracy is too low".format(web_name))
+                            points, value, pos = feature_prediction(model, data, web_name, team_code)
+                            print("player {} has been trainined. Expected points: {}".format(web_name, points))
+                            Records.append([web_name, points, value, pos, team_code])
                         else: print("player {} has low chance of playing next round".format(web_name))
                     else:
                         print("player {} is not playing this season".format(web_name))
@@ -89,6 +94,6 @@ for subdir, dirs, files in os.walk(players_dir):
                 print("player {} not found".format(subdir.replace(players_dir,"")))
 
 
-#df = pd.DataFrame([i for i in Records],
-                            #columns=["web_name", "points", "acc", "value", "pos", "team_code"])
-#df.to_csv('Player_predictions.csv', index=False)
+df = pd.DataFrame([i for i in Records],
+                            columns=["web_name", "points", "value", "pos", "team_code"])
+df.to_csv('Player_predictions.csv', index=False)

@@ -75,7 +75,7 @@ def select_team(expected_scores, prices, positions, clubs, total_budget=100, sub
 
     return decisions, captain_decisions, sub_decisions
 
-accuracy = trained_player_data["acc"]
+
 expected_scores = trained_player_data["points"]
 trained_player_data["value"] = [i/10 for i in trained_player_data["value"]]
 prices = trained_player_data["value"]
@@ -93,20 +93,20 @@ decisions, captain_decisions, sub_decisions= select_team(expected_scores.values,
 
 for i in range(trained_player_data.shape[0]):
     if decisions[i].value() != 0:
-        print("**{}** Points = {}, Price = {}, Accuracy = {}, position = {}".format
-              (names[i], expected_scores[i], prices[i], accuracy[i], positions[i]))
+        print("**{}** Points = {}, Price = {}, position = {}".format
+              (names[i], expected_scores[i], prices[i], positions[i]))
 print()
 print("Subs:")
 # print results
 for i in range(trained_player_data.shape[0]):
     if sub_decisions[i].value() == 1:
-        print("**{}** Points = {}, Price = {}, Accuracy = {}, position = {}".format
-              (names[i], expected_scores[i], prices[i], accuracy[i], positions[i]))
+        print("**{}** Points = {}, Price = {}, position = {}".format
+              (names[i], expected_scores[i], prices[i], positions[i]))
 
 print()
 print("Captain:")
 # print results
 for i in range(trained_player_data.shape[0]):
     if captain_decisions[i].value() == 1:
-        print("**{}** Points = {}, Price = {}, Accuracy = {}, position = {}".format
-              (names[i], expected_scores[i], prices[i], accuracy[i], positions[i]))
+        print("**{}** Points = {}, Price = {}, position = {}".format
+              (names[i], expected_scores[i], prices[i], positions[i]))

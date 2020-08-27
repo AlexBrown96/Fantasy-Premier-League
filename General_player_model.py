@@ -94,16 +94,16 @@ def Organise_data_set(season_data):
 data_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/gws/merged_gw.csv")
 x, y = None, None
 
-x, y = Organise_data_set(data_in)
+#x, y = Organise_data_set(data_in)
 
 # Save organised data
 
-# if x is not None:
-#     with open('x.p', "wb") as x_data:
-#         pickle.dump(x, x_data, protocol=pickle.HIGHEST_PROTOCOL)
-# if y is not None:
-#     with open('y.p', "wb") as y_data:
-#         pickle.dump(y, y_data, protocol=pickle.HIGHEST_PROTOCOL)
+if x is not None:
+    with open('x.p', "wb") as x_data:
+        pickle.dump(x, x_data, protocol=pickle.HIGHEST_PROTOCOL)
+if y is not None:
+    with open('y.p', "wb") as y_data:
+        pickle.dump(y, y_data, protocol=pickle.HIGHEST_PROTOCOL)
 
 ########################################################################################################################
 
@@ -126,18 +126,18 @@ def train_model(x_data, y_data, training_counts=1):
     print("Accuracy: ", best_acc)
     return best_linear, best_acc
 
-#with open('x.p', 'rb') as x:
-    #x_data = pickle.load(x)
+with open('x.p', 'rb') as x:
+    x = pickle.load(x)
 
-#with open('y.p', 'rb') as y:
-    #y_data = pickle.load(y)
+with open('y.p', 'rb') as y:
+    y = pickle.load(y)
 
-# model = None
-model, acc = train_model(x, y, 1)
+model = None
+# model, acc = train_model(x, y, 1000)
 
-#if model is not None:
-#    with open('General_player_linear_model.p', "wb") as m:
-#        pickle.dump(model, m)
+if model is not None:
+    with open('General_player_linear_model.p', "wb") as m:
+        pickle.dump(model, m)
 
 ########################################################################################################################
 us_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/understat/understat_player.csv", encoding='latin-1')
@@ -146,23 +146,16 @@ understat_raw_data = np.array(us_in)
 current_player_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players_raw.csv")
 current_player_data["name"] = [(''.join(filter(lambda j: j.isalpha(), "{}{}".format(x,y)))) for x,y in
                                list(zip(current_player_data["first_name"], current_player_data["second_name"]))]
-
+current_teams = pd.read_csv("../Fantasy-Premier-League/data/2020-21/teams.csv")
 
 gameweek = 0
 
 
-def feature_prediction(linear, data, player_name):
-    #headers = ["assists", "clean_sheets",
-               #"goals_scored", "was_home", "saves", "value", "selected"]
-    print("Geting players feature predicions")
+def feature_prediction(linear, data, player_name, team_code):
     heads = ["total_points", "pos", "minutes", "team", "now_cost",
              "was_home", "ict_index", "xG", "xA", "bonus", "clean_sheets", "strength"]
-
     # Get last seasons data
-
     # Assists and goals scored from understat
-    us_heads = ["xG", "xA", "games"]
-    # player_name.replace(" ", "")
     player_id_data_us = understat_raw_data[:, 1]
     try:
         player_index_us = (np.nonzero(player_id_data_us == player_name)[0][0])
@@ -188,37 +181,38 @@ def feature_prediction(linear, data, player_name):
                                  "selected_by_percent", "points_per_game", "minutes", "bonus"], player_index_cp)
     value = extra_data["now_cost"]
     pos = extra_data["element_type"]
-    team_code = extra_data["team"]
+    team = extra_data["team"]
     bonus = extra_data["bonus"] / games
-    #selected = extra_data["selected_by_percent"]
     avg_mins = extra_data["minutes"] / games
-    # TODO find out why this is very high for some players
     ict = extra_data["ict_index"] / games
-    fixture_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/fixtures.csv")
-    fixture_dif = (fd.fixture_dif_data(team_code, fixture_data))[0][gameweek]
-    # Get new team code
-    team_a = np.array(fixture_data["team_a"])[gameweek*20:(gameweek*20)+20]
-    team_h = np.array(fixture_data["team_h"])[gameweek*20:(gameweek*20)+20]
-    team_a_index = (np.nonzero(team_a == team_code)[0][0])
-    team_h_index = (np.nonzero(team_h == team_code)[0][0])
 
-    if team_a_index > team_h_index:
-        was_home = True
+    # Get fixture data
+    fixture_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/fixtures.csv")
+    #fixture_dif = (fd.fixture_dif_data(team, fixture_data))[0][gameweek]
+    # Get new team code
+    gameweek = 1
+    gw_matches = list(np.where(np.array(fixture_data["event"]) == gameweek)[0])
+    team_a = np.array(fixture_data["team_a"])[gw_matches[0]:gw_matches[-1]]
+    team_h = np.array(fixture_data["team_h"])[gw_matches[0]:gw_matches[-1]]
+    if np.int64(team) not in team_a and team not in team_h:
+        return 0, value, pos
     else:
-        was_home = False
-    strength = 4
+        if team in team_a:
+            was_home = False
+        else:
+            was_home = True
+
+    # Get team strength for upcoming fixture
+    c_t = np.array(current_teams["code"])
+    if team_code in c_t:
+        team_index = (np.nonzero(c_t == team_code)[0][0])
+        strength = selected_stats(current_teams, ["strength"], team_index)[0]
+    else:
+        strength = 2
     # Predictions
     # TODO could this be done for multiple future gameweeks eg 3 gws
     predictions = np.array([pos, avg_mins, value, was_home, ict, xG, xA, bonus, cs, strength, saves])
-    points = linear.predict([predictions])
-    breakpoint()
+    points = float(linear.predict([predictions]))
     return points, value, pos
 
 
-#with open('General_player_linear_model.p', 'rb') as m:
-#    model = pickle.load(m)
-
-data = pd.read_csv("../Fantasy-Premier-League/data/2019-20/players/Aaron_Cresswell_376/gw.csv")
-name = "AaronCresswell"
-points, value, pos = feature_prediction(model, data, name)
-print(points)
