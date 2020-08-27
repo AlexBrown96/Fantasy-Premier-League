@@ -2,8 +2,8 @@ import pandas as pd
 import pulp
 import numpy as np
 trained_player_data = pd.read_csv("Player_predictions.csv")
-#trained_player_data2 = pd.read_csv("Champ_player_predictions.csv")
-#trained_player_data = pd.concat([trained_player_data, trained_player_data2], axis=0, ignore_index=True)
+trained_player_data2 = pd.read_csv("champ_player_predictions_temp.csv")
+trained_player_data = pd.concat([trained_player_data, trained_player_data2], axis=0, ignore_index=True)
 
 # Code taken from https://github.com/nuebar/forecasting-fantasy-football
 # nuebar's code:
