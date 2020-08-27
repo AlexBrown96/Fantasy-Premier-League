@@ -94,16 +94,16 @@ def Organise_data_set(season_data):
 data_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/gws/merged_gw.csv")
 x, y = None, None
 
-#x, y = Organise_data_set(data_in)
+# x, y = Organise_data_set(data_in)
 
 # Save organised data
 
-if x is not None:
-    with open('x.p', "wb") as x_data:
-        pickle.dump(x, x_data, protocol=pickle.HIGHEST_PROTOCOL)
-if y is not None:
-    with open('y.p', "wb") as y_data:
-        pickle.dump(y, y_data, protocol=pickle.HIGHEST_PROTOCOL)
+# if x is not None:
+#     with open('x.p', "wb") as x_data:
+#         pickle.dump(x, x_data)
+# if y is not None:
+#     with open('y.p', "wb") as y_data:
+#         pickle.dump(y, y_data)
 
 ########################################################################################################################
 
@@ -126,18 +126,18 @@ def train_model(x_data, y_data, training_counts=1):
     print("Accuracy: ", best_acc)
     return best_linear, best_acc
 
-with open('x.p', 'rb') as x:
-    x = pickle.load(x)
-
-with open('y.p', 'rb') as y:
-    y = pickle.load(y)
+# with open('x.p', 'rb') as x:
+#     x = pickle.load(x)
+#
+# with open('y.p', 'rb') as y:
+#     y = pickle.load(y)
 
 model = None
 # model, acc = train_model(x, y, 1000)
-
-if model is not None:
-    with open('General_player_linear_model.p', "wb") as m:
-        pickle.dump(model, m)
+#
+# if model is not None:
+#     with open('General_player_linear_model.p', "wb") as m:
+#         pickle.dump(model, m)
 
 ########################################################################################################################
 us_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/understat/understat_player.csv", encoding='latin-1')
