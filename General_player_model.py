@@ -27,6 +27,17 @@ def selected_stats(data, heads, row_index):
 
 
 def Organise_data_set(season_data):
+    '''
+    Function takes merged gw data and organises stats
+    for each player from the season.
+
+    Returns the following features as an npy array:
+
+    "total_points", "pos", "minutes", "now_cost",
+    "was_home", "ict_index", "xG", "xA", "bonus",
+    "clean_sheets", "strength", "saves"
+
+    '''
     pos_list = []
     team_list = []
     cost_list = []
@@ -142,7 +153,6 @@ model = None
 ########################################################################################################################
 us_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/understat/understat_player.csv", encoding='latin-1')
 us_in["player_name"] = [(''.join(filter(lambda j: j.isalpha(), i))) for i in us_in["player_name"]]
-understat_raw_data = np.array(us_in)
 current_player_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players_raw.csv")
 current_player_data["name"] = [(''.join(filter(lambda j: j.isalpha(), "{}{}".format(x,y)))) for x,y in
                                list(zip(current_player_data["first_name"], current_player_data["second_name"]))]
