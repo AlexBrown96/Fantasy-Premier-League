@@ -2,13 +2,11 @@ import pandas as pd
 import pulp
 import numpy as np
 trained_player_data = pd.read_csv("Player_predictions.csv")
-trained_player_data2 = pd.read_csv("champ_player_predictions_temp.csv")
-trained_player_data = pd.concat([trained_player_data, trained_player_data2], axis=0, ignore_index=True)
+#trained_player_data2 = pd.read_csv("champ_player_predictions_temp.csv")
+#trained_player_data = pd.concat([trained_player_data, trained_player_data2], axis=0, ignore_index=True)
 
 # Code taken from https://github.com/nuebar/forecasting-fantasy-football
 # nuebar's code:
-
-# TODO add bias for the upcoming fixtures and for the model accuracy produced by the machine learning algorithm
 
 
 def select_team(expected_scores, prices, positions, clubs, total_budget=100, sub_factor=0.2):

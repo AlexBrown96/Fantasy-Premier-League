@@ -67,7 +67,7 @@ def selected_stats(data, heads, row_index):
     return data[heads].loc[row_index]
 
 
-us_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/understat/understat_player.csv", encoding='latin-1')
+us_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/understat/understat_player.csv", encoding='latin-1')
 us_in["player_name"] = [(''.join(filter(lambda j: j.isalpha(), i))) for i in us_in["player_name"]]
 understat_raw_data = np.array(us_in)
 current_player_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players_raw.csv")

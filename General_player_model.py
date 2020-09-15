@@ -151,7 +151,7 @@ model = None
 #         pickle.dump(model, m)
 
 ########################################################################################################################
-us_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/understat/understat_player.csv", encoding='latin-1')
+us_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/understat/understat_player.csv", encoding='latin-1')
 us_in["player_name"] = [(''.join(filter(lambda j: j.isalpha(), i))) for i in us_in["player_name"]]
 current_player_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players_raw.csv")
 current_player_data["name"] = [(''.join(filter(lambda j: j.isalpha(), "{}{}".format(x,y)))) for x,y in
@@ -200,7 +200,7 @@ def feature_prediction(linear, data, player_name, team_code):
     fixture_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/fixtures.csv")
     #fixture_dif = (fd.fixture_dif_data(team, fixture_data))[0][gameweek]
     # Get new team code
-    gameweek = 1
+    gameweek = 2
     gw_matches = list(np.where(np.array(fixture_data["event"]) == gameweek)[0])
     team_a = np.array(fixture_data["team_a"])[gw_matches[0]:gw_matches[-1]]
     team_h = np.array(fixture_data["team_h"])[gw_matches[0]:gw_matches[-1]]
