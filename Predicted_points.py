@@ -37,7 +37,6 @@ def predicted_points(team_code, data, training_counts=10, player_name="", past_p
     headers.append("position")
     player_data = pd.concat([player_data, pos_list_data], axis=1)
     x = np.array(player_data.drop(["total_points"], 1))
-    # <class 'list'>: [0, 0.02631578947368421, 0, True, 0.0, 0.6815789473684211, 55.0, 3, 3.0, 0.1]
     # Array of labels
     y = np.array(player_data["total_points"])
     linear, acc = train_model(x, y, training_counts)

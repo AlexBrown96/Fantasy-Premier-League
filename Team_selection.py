@@ -1,7 +1,9 @@
 import pandas as pd
 import pulp
 import numpy as np
+import gameweek
 trained_player_data = pd.read_csv("Player_predictions.csv")
+from Transfer_selection import TransferOptimiser
 #trained_player_data2 = pd.read_csv("champ_player_predictions_temp.csv")
 #trained_player_data = pd.concat([trained_player_data, trained_player_data2], axis=0, ignore_index=True)
 
@@ -88,23 +90,48 @@ decisions, captain_decisions, sub_decisions= select_team(expected_scores.values,
                                            clubs.values)
 
 
+temp = []
 
 for i in range(trained_player_data.shape[0]):
     if decisions[i].value() != 0:
-        print("**{}** Points = {}, Price = {}, position = {}".format
-              (names[i], expected_scores[i], prices[i], positions[i]))
-print()
-print("Subs:")
-# print results
+        temp.append([names[i], expected_scores[i], prices[i], positions[i], clubs[i], "player"])
+
 for i in range(trained_player_data.shape[0]):
     if sub_decisions[i].value() == 1:
-        print("**{}** Points = {}, Price = {}, position = {}".format
-              (names[i], expected_scores[i], prices[i], positions[i]))
+        temp.append([names[i], expected_scores[i], prices[i], positions[i], clubs[i], "sub"])
+
+# for i in range(trained_player_data.shape[0]):
+#     if captain_decisions[i].value() == 1:
+#         temp.append([names[i], expected_scores[i], prices[i], positions[i], clubs[i], "captain"])
+
+team_selection = pd.DataFrame([i for i in temp], columns=["name", "points", "value", "pos", "team_code", "type"])
+#print(team_selection)
+team_selection.to_csv('team_selection_week{}.csv'.format(gameweek.get_recent_gameweek_id()), index=False)
+
+# Transfers
+player_indices = []
 
 print()
-print("Captain:")
-# print results
-for i in range(trained_player_data.shape[0]):
-    if captain_decisions[i].value() == 1:
-        print("**{}** Points = {}, Price = {}, position = {}".format
-              (names[i], expected_scores[i], prices[i], positions[i]))
+print("First Team:")
+for i in range(len(decisions)):
+    if decisions[i].value() == 1:
+        print("{}{}".format(names[i], "*" if captain_decisions[i].value() == 1 else ""), expected_scores[i], prices[i])
+        player_indices.append(i)
+print()
+print("Subs:")
+for i in range(len(sub_decisions)):
+    if sub_decisions[i].value() == 1:
+        print(names[i], expected_scores[i], prices[i])
+        player_indices.append(i)
+score_forecast = expected_scores
+score_forecast = score_forecast.fillna(0)
+print(player_indices)
+opt = TransferOptimiser(score_forecast.values, prices.values, prices.values, positions.values, clubs.values)
+
+breakpoint()
+transfer_in_decisions, transfer_out_decisions, starters, sub_decisions, captain_decisions = opt.solve(player_indices, budget_now=0, sub_factor=0.2)
+for i in range(len(transfer_in_decisions)):
+    if transfer_in_decisions[i].value() == 1:
+        print("Transferred in: {} {} {}".format(names[i], prices[i], score_forecast[i]))
+    if transfer_out_decisions[i].value() == 1:
+        print("Transferred out: {} {} {}".format(names[i], prices[i], score_forecast[i]))

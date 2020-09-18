@@ -2,10 +2,10 @@ import os
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
-from Predicted_points import predicted_points
 import numpy as np
 from General_player_model import feature_prediction
 import pickle
+
 # TODO remove relegated teams
 # Obtain raw player data
 try:

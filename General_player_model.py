@@ -20,7 +20,7 @@ understat_raw_data = np.array(us_in)
 teams_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/teams.csv")
 teams_raw = np.array(teams_in)
 pd_heads = ["element_type", "team", "now_cost"]
-us_heads = ["games", "xG", "xA"]
+us_heads = ["games", "xG", "xA", "npxG"]
 
 def selected_stats(data, heads, row_index):
     return data[heads].loc[row_index]
@@ -163,7 +163,7 @@ gameweek = 0
 
 def feature_prediction(linear, data, player_name, team_code):
     heads = ["total_points", "pos", "minutes", "team", "now_cost",
-             "was_home", "ict_index", "xG", "xA", "bonus", "clean_sheets", "strength"]
+             "was_home", "ict_index", "npxG", "xA", "bonus", "clean_sheets", "strength"]
     # Get last seasons data
     # Assists and goals scored from understat
     player_id_data_us = understat_raw_data[:, 1]
@@ -176,7 +176,7 @@ def feature_prediction(linear, data, player_name, team_code):
     else:
         extra_data_us = selected_stats(us_in, us_heads, player_index_us)
         games = np.array(extra_data_us["games"])
-        xG = np.array(extra_data_us["xG"]) / games
+        xG = np.array(extra_data_us["npxG"]) / games
         xA = np.array(extra_data_us["xA"]) / games
     games = len(data["saves"])
     saves = np.sum(np.array(data["saves"])) / games
