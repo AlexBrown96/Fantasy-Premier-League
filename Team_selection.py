@@ -4,6 +4,7 @@ import numpy as np
 import gameweek
 trained_player_data = pd.read_csv("Player_predictions.csv")
 from Transfer_selection import TransferOptimiser
+
 #trained_player_data2 = pd.read_csv("champ_player_predictions_temp.csv")
 #trained_player_data = pd.concat([trained_player_data, trained_player_data2], axis=0, ignore_index=True)
 
@@ -109,29 +110,62 @@ team_selection = pd.DataFrame([i for i in temp], columns=["name", "points", "val
 team_selection.to_csv('team_selection_week{}.csv'.format(gameweek.get_recent_gameweek_id()), index=False)
 
 # Transfers
-player_indices = []
 
+###############################################################
+# Ensure current team is picked
+
+current_team = pd.read_csv("../Fantasy-Premier-League/team_162673_data20_21/picks_{}.csv".format(gameweek.get_recent_gameweek_id()))
+
+
+def conv_team(data):
+    ids = list(data["id"])
+    points = list(data["points"])
+    names = list(data["web_name"])
+
+    for key, val in enumerate(ids):
+        if val not in list(current_team["element"]):
+            points[key] = -100
+    data["points"] = pd.Series(points)
+    return data
+
+df = conv_team(pd.read_csv("Player_predictions.csv"))
+#df = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players_raw.csv")
+
+expected_scores = df["points"]
+prices = pd.Series([i/10 for i in df["value"]])
+positions = df["pos"]
+clubs = df["team_code"]
+names = df["web_name"]
+################################################################
+decisions, captain_decisions, sub_decisions = select_team(expected_scores.values, prices.values, positions.values, clubs.values)
+################################################################
+player_indices = []
+print()
+print()
+print()
 print()
 print("First Team:")
 for i in range(len(decisions)):
     if decisions[i].value() == 1:
-        print("{}{}".format(names[i], "*" if captain_decisions[i].value() == 1 else ""), expected_scores[i], prices[i])
+        print("{}{}".format(names[i], "*" if captain_decisions[i].value() == 1 else ""))
         player_indices.append(i)
 print()
 print("Subs:")
 for i in range(len(sub_decisions)):
     if sub_decisions[i].value() == 1:
-        print(names[i], expected_scores[i], prices[i])
+        print(names[i])
         player_indices.append(i)
-score_forecast = expected_scores
-score_forecast = score_forecast.fillna(0)
-print(player_indices)
-opt = TransferOptimiser(score_forecast.values, prices.values, prices.values, positions.values, clubs.values)
+score_forecast = trained_player_data["points"]
 
-breakpoint()
-transfer_in_decisions, transfer_out_decisions, starters, sub_decisions, captain_decisions = opt.solve(player_indices, budget_now=0, sub_factor=0.2)
+opt = TransferOptimiser(score_forecast.values, prices.values, prices.values, positions.values, clubs.values)
+transfer_in_decisions, transfer_out_decisions, starters, sub_decisions, captain_decisions = opt.solve(player_indices, budget_now=0.7, sub_factor=0.2)
+
+dec = [],[]
 for i in range(len(transfer_in_decisions)):
     if transfer_in_decisions[i].value() == 1:
-        print("Transferred in: {} {} {}".format(names[i], prices[i], score_forecast[i]))
+        dec[0].append([names[i], prices[i], score_forecast[i], positions[i]])
     if transfer_out_decisions[i].value() == 1:
-        print("Transferred out: {} {} {}".format(names[i], prices[i], score_forecast[i]))
+        dec[1].append([names[i], prices[i], score_forecast[i],  positions[i]])
+
+print(pd.DataFrame(dec[0][:], columns=["name", "price", "points", "pos"]))
+print(pd.DataFrame(dec[1][:], columns=["name", "price", "points", "pos"]))

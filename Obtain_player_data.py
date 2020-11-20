@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from General_player_model import feature_prediction
 import pickle
-
+# TODO could use a model for each team or each player type
 # TODO remove relegated teams
 # Obtain raw player data
 try:
@@ -63,10 +63,13 @@ for subdir, dirs, files in os.walk(players_dir):
     for file in files:
         if file == "gw.csv":
             # Minimum games played
-            min_games = 1
+            min_games = 2
 
             data = pd.read_csv(subdir+"/gw.csv", sep=",")
-            data["selected_by_percent"] = [100*(val/num_players[key]) for key, val in enumerate(data["selected"])]
+            try:
+                data["selected_by_percent"] = [100*(val/num_players[key]) for key, val in enumerate(data["selected"])]
+            except IndexError:
+                print("player {} gw not consistent with rounds".format(subdir.replace(players_dir,"")))
             player_id = (''.join(filter(lambda i: i.isdigit(), subdir))).replace('202021', '')
             if len(data["round"]) >= min_games:
                 # From raw data
@@ -80,11 +83,14 @@ for subdir, dirs, files in os.walk(players_dir):
                         player_id_data = current_player_data["name"]
                         player_index = (np.nonzero(player_id_data == web_name)[0][0])
                         chance_playing = np.array(current_player_data["chance_of_playing_next_round"])[player_index]
-                        if chance_playing == "None":
+                        if chance_playing != "0":
                             points, value, pos = feature_prediction(model, data, web_name, team_code)
                             print("player {} has been trainined. Expected points: {}".format(web_name, points))
-                            Records.append([web_name, points, value, pos, team_code])
-                        else: print("player {} has low chance of playing next round".format(web_name))
+                            Records.append([web_name, points, value, pos, team_code, player_id])
+                        else:
+                            points, value, pos = feature_prediction(model, data, web_name, team_code)
+                            Records.append([web_name, points*0.33, value, pos, team_code, player_id])
+                            print("player {} has low chance of playing next round, Expected score: {}".format(web_name, points*.5))
                     else:
                         print("player {} is not playing this season".format(web_name))
             else:
@@ -92,5 +98,5 @@ for subdir, dirs, files in os.walk(players_dir):
 
 
 df = pd.DataFrame([i for i in Records],
-                            columns=["web_name", "points", "value", "pos", "team_code"])
+                            columns=["web_name", "points", "value", "pos", "team_code", "id"])
 df.to_csv('Player_predictions.csv', index=False)

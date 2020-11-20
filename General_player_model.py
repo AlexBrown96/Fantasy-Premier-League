@@ -6,7 +6,8 @@ import pandas as pd
 import numpy as np
 import pickle
 import time
-import Fixture_difficulty as fd
+import gameweek
+gameweek = gameweek.get_recent_gameweek_id()
 
 start_time = time.time()
 
@@ -92,7 +93,7 @@ def Organise_data_set(season_data):
     season_data["strength"] = strength
     # Modify the input data based on the selected features
 
-    heads = ["total_points", "pos", "minutes", "now_cost", "was_home", "ict_index", "xG", "xA", "bonus", "clean_sheets", "strength", "saves"]
+    heads = ["total_points", "pos", "minutes", "now_cost", "was_home", "ict_index", "xG", "xA", "clean_sheets", "strength", "saves"]
     player_data = season_data[heads]
     # Drop the predicted points label to produce x and y
     x = np.array(player_data.drop(["total_points"], 1))
@@ -106,9 +107,9 @@ data_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/gws/merged_gw.csv"
 x, y = None, None
 
 # x, y = Organise_data_set(data_in)
-
-# Save organised data
-
+#
+# #Save organised data
+#
 # if x is not None:
 #     with open('x.p', "wb") as x_data:
 #         pickle.dump(x, x_data)
@@ -119,11 +120,10 @@ x, y = None, None
 ########################################################################################################################
 
 def train_model(x_data, y_data, training_counts=1):
-    best_acc = 0
     models = [[], []]
     print("Training model, with {} training counts".format(training_counts))
     for counts in range(training_counts):
-        x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x_data, y_data, test_size=0.1)
+        x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x_data, y_data, test_size=0.05)
 
         linear = linear_model.LinearRegression()
         linear.fit(x_train, y_train)
@@ -142,8 +142,8 @@ def train_model(x_data, y_data, training_counts=1):
 #
 # with open('y.p', 'rb') as y:
 #     y = pickle.load(y)
-
-model = None
+#
+# model = None
 # model, acc = train_model(x, y, 1000)
 #
 # if model is not None:
@@ -158,12 +158,10 @@ current_player_data["name"] = [(''.join(filter(lambda j: j.isalpha(), "{}{}".for
                                list(zip(current_player_data["first_name"], current_player_data["second_name"]))]
 current_teams = pd.read_csv("../Fantasy-Premier-League/data/2020-21/teams.csv")
 
-gameweek = 0
-
 
 def feature_prediction(linear, data, player_name, team_code):
     heads = ["total_points", "pos", "minutes", "team", "now_cost",
-             "was_home", "ict_index", "npxG", "xA", "bonus", "clean_sheets", "strength"]
+             "was_home", "ict_index", "xG", "xA", "clean_sheets", "strength"]
     # Get last seasons data
     # Assists and goals scored from understat
     player_id_data_us = understat_raw_data[:, 1]
@@ -188,11 +186,11 @@ def feature_prediction(linear, data, player_name, team_code):
     player_index_cp = (np.nonzero(np.array(current_player_data["name"]) == player_name)[0][0])
     extra_data = selected_stats(current_player_data,
                                 ["now_cost", "element_type", "team", "ict_index",
-                                 "selected_by_percent", "points_per_game", "minutes", "bonus"], player_index_cp)
+                                 "selected_by_percent", "points_per_game", "minutes"], player_index_cp)
     value = extra_data["now_cost"]
     pos = extra_data["element_type"]
     team = extra_data["team"]
-    bonus = extra_data["bonus"] / games
+    #bonus = extra_data["bonus"] / games
     avg_mins = extra_data["minutes"] / games
     ict = extra_data["ict_index"] / games
 
@@ -200,11 +198,11 @@ def feature_prediction(linear, data, player_name, team_code):
     fixture_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/fixtures.csv")
     #fixture_dif = (fd.fixture_dif_data(team, fixture_data))[0][gameweek]
     # Get new team code
-    gameweek = 2
     gw_matches = list(np.where(np.array(fixture_data["event"]) == gameweek)[0])
-    team_a = np.array(fixture_data["team_a"])[gw_matches[0]:gw_matches[-1]]
-    team_h = np.array(fixture_data["team_h"])[gw_matches[0]:gw_matches[-1]]
+    team_a = np.array(fixture_data["team_a"])[gw_matches[0]:]
+    team_h = np.array(fixture_data["team_h"])[gw_matches[0]:]
     if np.int64(team) not in team_a and team not in team_h:
+        breakpoint()
         return 0, value, pos
     else:
         if team in team_a:
@@ -221,8 +219,10 @@ def feature_prediction(linear, data, player_name, team_code):
         strength = 2
     # Predictions
     # TODO could this be done for multiple future gameweeks eg 3 gws
-    predictions = np.array([pos, avg_mins, value, was_home, ict, xG, xA, bonus, cs, strength, saves])
-    points = float(linear.predict([predictions]))
+    predictions = np.array([pos, avg_mins, value, was_home, ict, xG, xA, cs, strength, saves])
+#   ["total_points", "pos", "minutes", "now_cost", "was_home", "ict_index", "xG", "xA", "clean_sheets", "strength", "saves"]
+    bias = 0.6*strength
+    points = (2.71828 ** bias)/((2.71828 ** bias)+1) * float(linear.predict([predictions]))
     return points, value, pos
 
 
