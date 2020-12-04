@@ -174,11 +174,11 @@ def feature_prediction(linear, data, player_name, team_code):
     else:
         extra_data_us = selected_stats(us_in, us_heads, player_index_us)
         games = np.array(extra_data_us["games"])
-        xG = np.array(extra_data_us["npxG"]) / games
+        xG = np.array(extra_data_us["xG"]) / games
         xA = np.array(extra_data_us["xA"]) / games
-    games = len(data["saves"])
-    saves = np.sum(np.array(data["saves"])) / games
-    cs = np.sum(np.array(data["clean_sheets"])) / games
+    games = len(data["saves"][-5:])
+    saves = np.sum(np.array(data["saves"])[-5:]) / games
+    cs = np.sum(np.array(data["clean_sheets"])[-5:]) / games
     # Get gameweek
 
     # Values from current data
