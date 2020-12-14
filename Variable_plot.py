@@ -3,11 +3,11 @@ import matplotlib.pyplot as pyplot
 from matplotlib import style
 
 
-data = pd.read_csv("../Fantasy-Premier-League/data/2019-20/gws/merged_gw.csv", encoding='latin-1')
+data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/gws/merged_gw.csv", encoding='latin-1')
 heads = ["total_points", "assists", "clean_sheets",
                "goals_conceded", "goals_scored", "minutes", "was_home", "saves", "ict_index"]
 data = data[heads]
-predicted = "goals_scored"
+predicted = "clean_sheets"
 def plot_player_data(predicted="assists"):
     style.use("ggplot")
     pyplot.scatter(data["total_points"], data[predicted])
