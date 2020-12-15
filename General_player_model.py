@@ -12,13 +12,13 @@ gameweek = gameweek.get_recent_gameweek_id()
 start_time = time.time()
 
 pd.set_option("display.max_columns", None)
-pd_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/players_raw.csv")
-us_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/understat/understat_player.csv", encoding='latin-1')
-fd_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/fixtures.csv")
+pd_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players_raw.csv")
+us_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/understat/understat_player.csv", encoding='latin-1')
+fd_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/fixtures.csv")
 us_in["player_name"] = [(''.join(filter(lambda j: j.isalpha(), i))) for i in us_in["player_name"]]
 player_raw_data = np.array(pd_in)
 understat_raw_data = np.array(us_in)
-teams_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/teams.csv")
+teams_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/teams.csv")
 teams_raw = np.array(teams_in)
 pd_heads = ["element_type", "team", "now_cost"]
 us_heads = ["games", "xG", "xA", "npxG"]
@@ -50,8 +50,8 @@ def Organise_data_set(season_data):
     season_data["name"] = [(''.join(filter(lambda j: j.isalpha(), i))) for i in season_data["name"]]
     
     # First get the player's team, position and fixture difficulties
-    for row, val in enumerate(season_data["id"]):
-        player_id_data = player_raw_data[:, 26]
+    for row, val in enumerate(season_data["element"]):
+        player_id_data = player_raw_data[:, 30]
         player_index = (np.nonzero(player_id_data == int(val))[0][0])
         # Obtain player data from the selected column heading
         extra_data = selected_stats(pd_in, pd_heads, player_index)
@@ -103,7 +103,7 @@ def Organise_data_set(season_data):
 
 ########################################################################################################################
 
-data_in = pd.read_csv("../Fantasy-Premier-League/data/2019-20/gws/merged_gw.csv")
+data_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/gws/merged_gw.csv")
 x, y = None, None
 
 # x, y = Organise_data_set(data_in)
@@ -137,13 +137,13 @@ def train_model(x_data, y_data, training_counts=1):
     print("Accuracy: ", best_acc)
     return best_linear, best_acc
 
-# with open('x.p', 'rb') as x:
-#     x = pickle.load(x)
-#
-# with open('y.p', 'rb') as y:
-#     y = pickle.load(y)
-#
-# model = None
+with open('x.p', 'rb') as x:
+    x = pickle.load(x)
+
+with open('y.p', 'rb') as y:
+    y = pickle.load(y)
+
+model = None
 # model, acc = train_model(x, y, 1000)
 #
 # if model is not None:

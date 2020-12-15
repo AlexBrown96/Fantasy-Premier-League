@@ -158,7 +158,7 @@ for i in range(len(sub_decisions)):
 score_forecast = trained_player_data["points"]
 
 opt = TransferOptimiser(score_forecast.values, prices.values, prices.values, positions.values, clubs.values)
-transfer_in_decisions, transfer_out_decisions, starters, sub_decisions, captain_decisions = opt.solve(player_indices, budget_now=0.7, sub_factor=0.2)
+transfer_in_decisions, transfer_out_decisions, starters, sub_decisions, captain_decisions = opt.solve(player_indices, budget_now=1.0, sub_factor=0.2)
 
 dec = [],[]
 for i in range(len(transfer_in_decisions)):
