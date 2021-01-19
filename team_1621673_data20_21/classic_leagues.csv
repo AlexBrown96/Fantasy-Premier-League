@@ -1,5 +1,0 @@
-,id,name,short_name,created,closed,rank,max_entries,league_type,scoring,admin_entry,start_event,entry_rank,entry_last_rank,entry_can_leave,entry_can_admin,entry_can_invite
-0,124,Ireland,region-104,2020-08-15T09:00:48.791204Z,False,,,s,c,,1,222189,221266,False,False,False
-1,276,Gameweek 1,event-1,2020-08-15T09:00:52.298412Z,False,,,s,c,,1,5399415,5411920,False,False,False
-2,314,Overall,overall,2020-08-15T09:00:54.021038Z,False,,,s,c,,1,6346611,6292367,False,False,False
-3,353437,Lian,,2020-08-25T18:31:47.101526Z,False,,,x,c,59851.0,1,2,2,True,False,False

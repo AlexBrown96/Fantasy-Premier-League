@@ -123,7 +123,7 @@ def train_model(x_data, y_data, training_counts=1):
     models = [[], []]
     print("Training model, with {} training counts".format(training_counts))
     for counts in range(training_counts):
-        x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x_data, y_data, test_size=0.05)
+        x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x_data, y_data, test_size=0.2)
 
         linear = linear_model.LinearRegression()
         linear.fit(x_train, y_train)

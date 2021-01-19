@@ -1,7 +1,7 @@
 ,id,name,short_name,created,closed,rank,max_entries,league_type,scoring,admin_entry,start_event,entry_rank,entry_last_rank,entry_can_leave,entry_can_admin,entry_can_invite
-0,10,Leeds,team-10,2020-08-15T09:00:46.994952Z,False,,,s,c,,1,24353,19552,False,False,False
-1,261,England,region-241,2020-08-15T09:00:51.512249Z,False,,,s,c,,1,361848,295438,False,False,False
-2,276,Gameweek 1,event-1,2020-08-15T09:00:52.298412Z,False,,,s,c,,1,1163122,953778,False,False,False
-3,314,Overall,overall,2020-08-15T09:00:54.021038Z,False,,,s,c,,1,1175730,961328,False,False,False
-4,31202,r/LeedsUnited,,2020-08-15T13:38:17.329445Z,False,,,x,c,156093.0,1,187,155,True,False,False
-5,43848,Premier Noobs Season 3,,2020-08-15T15:45:32.918091Z,False,,,x,c,213924.0,1,5,3,True,False,False
+0,10,Leeds,team-10,2020-08-15T09:00:46.994952Z,False,,,s,c,,1,14609,13601,False,False,False
+1,261,England,region-241,2020-08-15T09:00:51.512249Z,False,,,s,c,,1,184387,173469,False,False,False
+2,276,Gameweek 1,event-1,2020-08-15T09:00:52.298412Z,False,,,s,c,,1,650147,616110,False,False,False
+3,314,Overall,overall,2020-08-15T09:00:54.021038Z,False,,,s,c,,1,654773,620519,False,False,False
+4,31202,r/LeedsUnited,,2020-08-15T13:38:17.329445Z,False,,,x,c,156093.0,1,144,132,True,False,True
+5,43848,Premier Noobs Season 3,,2020-08-15T15:45:32.918091Z,False,,,x,c,213924.0,1,3,4,True,False,False

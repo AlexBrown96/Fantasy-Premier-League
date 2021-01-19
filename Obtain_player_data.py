@@ -3,7 +3,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 import numpy as np
-from General_player_model import feature_prediction
+from Position_player_model import feature_prediction
 import pickle
 # TODO could use a model for each team or each player type
 # TODO remove relegated teams
@@ -63,7 +63,7 @@ for subdir, dirs, files in os.walk(players_dir):
     for file in files:
         if file == "gw.csv":
             # Minimum games played
-            min_games = 2
+            min_games = 5
 
             data = pd.read_csv(subdir+"/gw.csv", sep=",")
             try:
@@ -84,11 +84,11 @@ for subdir, dirs, files in os.walk(players_dir):
                         player_index = (np.nonzero(player_id_data == web_name)[0][0])
                         chance_playing = np.array(current_player_data["chance_of_playing_next_round"])[player_index]
                         if chance_playing != "0":
-                            points, value, pos = feature_prediction(model, data, web_name, team_code)
+                            points, value, pos = feature_prediction(data, web_name, team_code)
                             print("player {} has been trainined. Expected points: {}".format(web_name, points))
                             Records.append([web_name, points, value, pos, team_code, player_id])
                         else:
-                            points, value, pos = feature_prediction(model, data, web_name, team_code)
+                            points, value, pos = feature_prediction(data, web_name, team_code)
                             Records.append([web_name, points*0.33, value, pos, team_code, player_id])
                             print("player {} has low chance of playing next round, Expected score: {}".format(web_name, points*.5))
                     else:
