@@ -4,6 +4,7 @@ import numpy as np
 
 gw_dir = '../Fantasy-Premier-League/data/2020-21/gws'
 num_players = []
+temp_df = pd.DataFrame(columns=["name","points","value","pos","team_code","type","actual_points"])
 for subdir2, dirs2, files2 in os.walk(gw_dir):
     for file in files2:
         if file != "merged_gw.csv":
@@ -21,3 +22,6 @@ for subdir2, dirs2, files2 in os.walk(gw_dir):
                     a_points.append("0")
             ts_data["actual_points"] = a_points
             ts_data.to_csv("team_selection_week"+(''.join(filter(lambda i: i.isdigit(), file))).replace('gw', '')+".csv", index=False)
+            temp_df = pd.concat([temp_df, ts_data])
+
+temp_df.to_csv("merged_team_selections.csv")

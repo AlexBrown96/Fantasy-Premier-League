@@ -42,13 +42,13 @@ def parse_data():
         player_data = get_individual_player_data(i)
         parse_player_history(player_data["history_past"], player_base_filename, name, i)
         parse_player_gw_history(player_data["history"], player_base_filename, name, i)
-    if gw_num > 0:
-        print("Writing expected points")
-        with open(os.path.join(gw_base_filename, 'xP' + str(gw_num) + '.csv'), 'w+') as outf:
-            w = csv.DictWriter(outf, ['id', 'xP'])
-            w.writeheader()
-            for xp in xPoints:
-                w.writerow(xp)
+    # if gw_num > 0:
+    #     print("Writing expected points")
+    #     with open(os.path.join(gw_base_filename, 'xP' + str(gw_num) + '.csv'), 'w+') as outf:
+    #         w = csv.DictWriter(outf, ['id', 'xP'])
+    #         w.writeheader()
+    #         for xp in xPoints:
+    #             w.writerow(xp)
         print("Collecting gw scores")
         collect_gw(gw_num, player_base_filename, gw_base_filename)
         print("Merging gw scores")
