@@ -4,15 +4,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 import numpy as np
 from Position_player_model import feature_prediction
-import pickle
-# TODO could use a model for each team or each player type
-# TODO remove relegated teams
-# Obtain raw player data
-try:
-    with open('General_player_linear_model.p', 'rb') as m:
-            model = pickle.load(m)
-except Exception:
-    raise FileNotFoundError
+
 
 pd_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players_raw.csv")
 player_raw_data = np.array(pd_in)
@@ -63,7 +55,7 @@ for subdir, dirs, files in os.walk(players_dir):
     for file in files:
         if file == "gw.csv":
             # Minimum games played
-            min_games = 5
+            min_games = 3
 
             data = pd.read_csv(subdir+"/gw.csv", sep=",")
             try:
