@@ -12,7 +12,7 @@ from Transfer_selection import TransferOptimiser
 # nuebar's code:
 
 
-def select_team(expected_scores, prices, positions, clubs, total_budget=105.2, sub_factor=0):
+def select_team(expected_scores, prices, positions, clubs, total_budget=102.6, sub_factor=0.2):
     num_players = len(expected_scores)
     model = pulp.LpProblem("Constrained value maximisation", pulp.LpMaximize)
     decisions = [
