@@ -19,6 +19,7 @@ for subdir2, dirs2, files2 in os.walk(gw_dir, topdown=False):
                     a_points.append(int(gw_data["total_points"][gw_data.index[gw_data["name"]==player][0]]))
                 except:
                     a_points.append(0)
+            #a_points[a_points.index(max(a_points))] = 2*max(a_points)
             ts_data["actual_points"] = a_points
             ts_data["total_points_gw"] = 15*[ts_data["actual_points"].sum()]
             ts_data["gameweek"] = 15*[(''.join(filter(lambda i: i.isdigit(), file)))]

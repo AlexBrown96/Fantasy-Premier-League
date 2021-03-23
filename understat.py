@@ -47,6 +47,7 @@ def get_player_data(id):
             split_data = c.split('=')
             data = split_data[0].strip()
             print(data)
+            breakpoint()
 
 def parse_epl_data(outfile_base):
     teamData,playerData = get_epl_data()
@@ -62,7 +63,7 @@ def parse_epl_data(outfile_base):
 
 def main():
     parse_epl_data('data/2020-21/understat')
-    #get_player_data(318)
+    get_player_data(318)
 
 if __name__ == '__main__':
     main()

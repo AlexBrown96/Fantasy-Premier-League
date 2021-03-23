@@ -3,6 +3,7 @@ import pulp
 import numpy as np
 import gameweek
 trained_player_data = pd.read_csv("Player_predictions.csv")
+#trained_player_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players_raw.csv")
 from Transfer_selection import TransferOptimiser
 
 #trained_player_data2 = pd.read_csv("champ_player_predictions_temp.csv")
@@ -12,7 +13,7 @@ from Transfer_selection import TransferOptimiser
 # nuebar's code:
 
 
-def select_team(expected_scores, prices, positions, clubs, total_budget=102.6, sub_factor=0.2):
+def select_team(expected_scores, prices, positions, clubs, total_budget=104.8, sub_factor=0.1):
     num_players = len(expected_scores)
     model = pulp.LpProblem("Constrained value maximisation", pulp.LpMaximize)
     decisions = [
@@ -129,8 +130,6 @@ def conv_team(data):
     return data
 
 df = conv_team(pd.read_csv("Player_predictions.csv"))
-#df = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players_raw.csv")
-
 expected_scores = df["points"]
 prices = pd.Series([i/10 for i in df["value"]])
 positions = df["pos"]
@@ -166,6 +165,7 @@ for i in range(len(transfer_in_decisions)):
         dec[0].append([names[i], prices[i], score_forecast[i], positions[i]])
     if transfer_out_decisions[i].value() == 1:
         dec[1].append([names[i], prices[i], score_forecast[i],  positions[i]])
-
+print("Transfers in")
 print(pd.DataFrame(dec[0][:], columns=["name", "price", "points", "pos"]))
+print("Transfers out")
 print(pd.DataFrame(dec[1][:], columns=["name", "price", "points", "pos"]))

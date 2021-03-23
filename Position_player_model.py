@@ -6,6 +6,7 @@ import numpy as np
 import pickle
 import time
 import gameweek
+import current_week_fixtures
 warnings.simplefilter(action='ignore', category=UnboundLocalError)
 gameweek = gameweek.get_recent_gameweek_id()
 
@@ -162,8 +163,8 @@ def train(x_data, heads, pos_n=1, training_counts=1):
     return best_linear
 
 
-with open('x.p', 'rb') as x:
-    x = pickle.load(x)
+# with open('x.p', 'rb') as x:
+#     x = pickle.load(x)
 # with open('gk_model.p', "wb") as m:
 #     pickle.dump(train(x, gk_heads, 1, 3000), m)
 # with open('def_model.p', "wb") as m:
@@ -209,41 +210,37 @@ def feature_prediction(data, player_name, team_code):
     # Values from current data
     player_index_cp = (np.nonzero(np.array(current_player_data["name"]) == player_name)[0][0])
     extra_data = selected_stats(current_player_data,
-                                ["now_cost", "element_type", "team", "ict_index",
-                                 "selected_by_percent", "points_per_game", "minutes"], player_index_cp)
+                                ["now_cost", "element_type", "team_code", "ict_index",
+                                 "selected_by_percent", "points_per_game", "minutes", "chance_of_playing_next_round"], player_index_cp)
     value = extra_data["now_cost"]
     pos = extra_data["element_type"]
-    team = extra_data["team"]
-    #bonus = extra_data["bonus"] / games
-    avg_mins = extra_data["minutes"] / games
+    team = extra_data["team_code"]
     ict = extra_data["ict_index"] / games
-    # Get fixture data
-    fixture_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/fixtures.csv")
-    #fixture_dif = (fd.fixture_dif_data(team, fixture_data))[0][gameweek]
-    # Get new team code
-    gw_matches = list(np.where(np.array(fixture_data["event"]) == gameweek)[0])
-    team_a = np.array(fixture_data["team_a"])[gw_matches[0]:]
-    team_h = np.array(fixture_data["team_h"])[gw_matches[0]:]
-    if np.int64(team) not in team_a and team not in team_h:
-        breakpoint()
-        return 0, value, pos
+    cpnr = extra_data["chance_of_playing_next_round"]
+    # Get fixtures for the team that the player is playing for
+    current_fixtures = current_week_fixtures.get_next_n_fixtures(4)
+    team_a_n = list(current_fixtures["team_a_code"]).count(team)
+    team_a = list(current_week_fixtures.get_current_week_fixtures()["team_a_code"])
+    team_h_n = list(current_fixtures["team_h_code"]).count(team)
+    team_h = list(current_week_fixtures.get_current_week_fixtures()["team_h_code"])
+    multiplyer = (team_a_n + team_h_n) / 4
+    # Chance of playing next round multiplyer
+    if cpnr == "None":
+        cpnr = "100"
+    multiplyer *= float(cpnr)/100
+    if team in team_a:
+        was_home = False
     else:
-        if team in team_a:
-            was_home = False
-        else:
-            was_home = True
-    # Get team strength for upcoming fixture
-    c_t = np.array(current_teams["code"])
-    if team_code in c_t:
-        opp_index = (np.nonzero(teams_raw == team_code))[0][0]
-        extra_data_teams = selected_stats(teams_in, ["strength_attack_home", "strength_attack_away", "strength_defence_home", "strength_defence_away"], opp_index)
-        str_a_h = (extra_data_teams["strength_attack_home"])
-        str_a_a = (extra_data_teams["strength_attack_away"])
-        str_d_h = (extra_data_teams["strength_defence_home"])
-        str_d_a = (extra_data_teams["strength_defence_away"])
+        was_home = True
 
-    else:
-        return 0, value, pos
+    # Get team strength for upcoming fixtures
+    opp_index = (np.nonzero(teams_raw == team_code))[0][0]
+    extra_data_teams = selected_stats(teams_in, ["strength_attack_home", "strength_attack_away", "strength_defence_home", "strength_defence_away"], opp_index)
+    str_a_h = (extra_data_teams["strength_attack_home"])
+    str_a_a = (extra_data_teams["strength_attack_away"])
+    str_d_h = (extra_data_teams["strength_defence_home"])
+    str_d_a = (extra_data_teams["strength_defence_away"])
+
     # Predictions
     if pos == 1:
         with open('gk_model.p', "rb") as l:
@@ -265,4 +262,4 @@ def feature_prediction(data, player_name, team_code):
     predictions = np.array(vals)
     predictions = linear.predict([predictions])
     #   ["total_points", "pos", "minutes", "now_cost", "was_home", "ict_index", "xG", "xA", "clean_sheets", "strength", "saves"]
-    return predictions[0], value, pos
+    return multiplyer*predictions[0], value, pos

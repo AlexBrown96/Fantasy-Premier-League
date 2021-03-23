@@ -55,12 +55,8 @@ for subdir, dirs, files in os.walk(players_dir):
     for file in files:
         if file == "gw.csv":
             # Minimum games played
-            min_games = 1
+            min_games = 5
             data = pd.read_csv(subdir+"/gw.csv", sep=",")
-            try:
-                data["selected_by_percent"] = [100*(val/num_players[key]) for key, val in enumerate(data["selected"])]
-            except IndexError:
-                print("player {} gw not consistent with rounds".format(subdir.replace(players_dir,"")))
             player_id = (''.join(filter(lambda i: i.isdigit(), subdir))).replace('202021', '')
             if len(data["round"]) >= min_games:
                 # From raw data
@@ -82,8 +78,8 @@ for subdir, dirs, files in os.walk(players_dir):
                             Records.append([web_name, points, value, pos, team_code, player_id])
                         else:
                             points, value, pos = feature_prediction(data, web_name, team_code)
-                            Records.append([web_name, points*0.3, value, pos, team_code, player_id])
-                            print("player {} has low chance of playing next round, Expected score: {}".format(web_name, points*0))
+                            Records.append([web_name, points*(4/5), value, pos, team_code, player_id])
+                            print("player {} has low chance of playing next round, Expected score: {}".format(web_name, points*(4/5)))
                     else:
                         print("player {} is not playing this season".format(web_name))
             else:

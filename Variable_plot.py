@@ -5,7 +5,7 @@ from matplotlib import style
 
 data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/gws/merged_gw.csv", encoding='latin-1')
 heads = ["total_points", "assists", "clean_sheets",
-               "goals_conceded", "goals_scored", "minutes", "was_home", "saves", "ict_index"]
+               "goals_conceded", "goals_scored","ict_index"]
 data = data[heads]
 predicted = "clean_sheets"
 def plot_player_data(predicted="assists"):
@@ -17,7 +17,7 @@ def plot_player_data(predicted="assists"):
 
 plot_player_data(predicted)
 
-data = data[heads][:100]
+data = data[heads][-600:]
 values = data.values
 i = 1
 for head in heads:

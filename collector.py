@@ -45,7 +45,8 @@ def merge_gw(gw, gw_directory):
     merged_gw_filename = "merged_gw.csv"
     gw_filename = "gw" + str(gw) + ".csv"
     gw_path = os.path.join(gw_directory, gw_filename)
-    fin = open(gw_path, 'rU', encoding="utf-8")
+    #fin = open(gw_path, 'rU', encoding="utf-8")
+    fin = open(gw_path, 'rU')
     reader = csv.DictReader(fin)
     fieldnames = reader.fieldnames
     fieldnames += ["GW"]
