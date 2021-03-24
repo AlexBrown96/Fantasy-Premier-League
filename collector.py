@@ -109,9 +109,10 @@ def merge_all_gws(num_gws, gw_directory):
         merge_gw(i, gw_directory)
 
 def main():
-    #collect_all_gws(sys.argv[1], sys.argv[2])
-    merge_all_gws(int(sys.argv[1]), sys.argv[2])
-    #collect_gw(39, sys.argv[1], sys.argv[2])
+    #collect_all_gws(sys.argv[1], "../Fantasy-Premier-League/data/2020-21/gws")
+    #merge_all_gws(int(sys.argv[1]), sys.argv[2])
+    merge_all_gws(29, "../Fantasy-Premier-League/data/2020-21/gws")
+    #collect_gw(15, sys.argv[1], sys.argv[2])
 
 if __name__ == '__main__':
     main()

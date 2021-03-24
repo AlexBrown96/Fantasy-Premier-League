@@ -1,5 +1,9 @@
 code,event,finished,finished_provisional,id,kickoff_time,minutes,provisional_start_time,started,team_a,team_a_score,team_h,team_h_score,stats,team_h_difficulty,team_a_difficulty,pulse_id
 2128467,,False,False,180,,0,False,,7,,2,,[],4,3,59077
+2128597,,False,False,310,,0,False,,12,,2,,[],5,3,59207
+2128598,,False,False,311,,0,False,,3,,5,,[],3,4,59208
+2128601,,False,False,314,,0,False,,18,,9,,[],2,4,59211
+2128604,,False,False,317,,0,False,,6,,16,,[],3,3,59214
 2128573,,False,False,286,,0,False,,16,,17,,[],2,4,59183
 2128288,1.0,True,True,2,2020-09-12T11:30:00Z,90,False,True,1,3.0,8,0.0,"[{'identifier': 'goals_scored', 'a': [{'value': 1, 'element': 4}, {'value': 1, 'element': 6}, {'value': 1, 'element': 494}], 'h': []}, {'identifier': 'assists', 'a': [{'value': 3, 'element': 478}], 'h': []}, {'identifier': 'own_goals', 'a': [], 'h': []}, {'identifier': 'penalties_saved', 'a': [], 'h': []}, {'identifier': 'penalties_missed', 'a': [], 'h': []}, {'identifier': 'yellow_cards', 'a': [{'value': 1, 'element': 4}, {'value': 1, 'element': 11}], 'h': [{'value': 1, 'element': 175}, {'value': 1, 'element': 178}]}, {'identifier': 'red_cards', 'a': [], 'h': []}, {'identifier': 'saves', 'a': [{'value': 2, 'element': 8}], 'h': [{'value': 2, 'element': 186}]}, {'identifier': 'bonus', 'a': [{'value': 3, 'element': 494}, {'value': 2, 'element': 478}, {'value': 1, 'element': 6}, {'value': 1, 'element': 8}], 'h': []}, {'identifier': 'bps', 'a': [{'value': 37, 'element': 494}, {'value': 35, 'element': 478}, {'value': 29, 'element': 6}, {'value': 29, 'element': 8}, {'value': 28, 'element': 16}, {'value': 25, 'element': 17}, {'value': 23, 'element': 11}, {'value': 21, 'element': 15}, {'value': 19, 'element': 4}, {'value': 15, 'element': 526}, {'value': 11, 'element': 9}, {'value': 6, 'element': 501}, {'value': 3, 'element': 18}, {'value': 3, 'element': 22}], 'h': [{'value': 16, 'element': 176}, {'value': 14, 'element': 373}, {'value': 12, 'element': 178}, {'value': 12, 'element': 182}, {'value': 12, 'element': 525}, {'value': 11, 'element': 175}, {'value': 11, 'element': 186}, {'value': 10, 'element': 187}, {'value': 7, 'element': 180}, {'value': 4, 'element': 181}, {'value': 4, 'element': 191}, {'value': 3, 'element': 184}, {'value': 3, 'element': 188}, {'value': -2, 'element': 190}]}]",3,2,58898
 2128287,1.0,True,True,1,2020-09-12T14:00:00Z,90,False,True,16,0.0,6,1.0,"[{'identifier': 'goals_scored', 'a': [], 'h': [{'value': 1, 'element': 141}]}, {'identifier': 'assists', 'a': [], 'h': [{'value': 1, 'element': 137}]}, {'identifier': 'own_goals', 'a': [], 'h': []}, {'identifier': 'penalties_saved', 'a': [], 'h': []}, {'identifier': 'penalties_missed', 'a': [], 'h': []}, {'identifier': 'yellow_cards', 'a': [{'value': 1, 'element': 375}], 'h': [{'value': 1, 'element': 131}, {'value': 1, 'element': 142}]}, {'identifier': 'red_cards', 'a': [], 'h': []}, {'identifier': 'saves', 'a': [{'value': 2, 'element': 363}], 'h': [{'value': 5, 'element': 128}]}, {'identifier': 'bonus', 'a': [], 'h': [{'value': 3, 'element': 128}, {'value': 2, 'element': 137}, {'value': 1, 'element': 486}]}, {'identifier': 'bps', 'a': [{'value': 19, 'element': 369}, {'value': 17, 'element': 363}, {'value': 15, 'element': 362}, {'value': 15, 'element': 370}, {'value': 13, 'element': 364}, {'value': 12, 'element': 367}, {'value': 12, 'element': 375}, {'value': 11, 'element': 376}, {'value': 5, 'element': 365}, {'value': 4, 'element': 361}, {'value': 4, 'element': 379}, {'value': 4, 'element': 382}, {'value': 3, 'element': 377}, {'value': 1, 'element': 366}], 'h': [{'value': 31, 'element': 128}, {'value': 26, 'element': 137}, {'value': 24, 'element': 486}, {'value': 23, 'element': 146}, {'value': 22, 'element': 134}, {'value': 18, 'element': 141}, {'value': 14, 'element': 130}, {'value': 6, 'element': 138}, {'value': 5, 'element': 131}, {'value': 3, 'element': 133}, {'value': 3, 'element': 142}, {'value': 3, 'element': 489}, {'value': -7, 'element': 140}]}]",2,3,58897
@@ -294,10 +298,10 @@ code,event,finished,finished_provisional,id,kickoff_time,minutes,provisional_sta
 2128578,30.0,False,False,291,2021-04-03T11:30:00Z,0,False,False,18,,5,,[],2,4,59188
 2128580,30.0,False,False,293,2021-04-03T14:00:00Z,0,False,False,15,,10,,[],2,3,59190
 2128581,30.0,False,False,294,2021-04-03T16:30:00Z,0,False,False,12,,9,,[],5,4,59191
-2128577,30.0,False,False,290,2021-04-03T19:00:00Z,0,False,False,8,,2,,[],2,3,59187
+2128576,30.0,False,False,289,2021-04-03T19:00:00Z,0,False,False,11,,1,,[],4,3,59186
 2128584,30.0,False,False,297,2021-04-04T11:00:00Z,0,False,False,4,,16,,[],2,3,59194
 2128583,30.0,False,False,296,2021-04-04T13:05:00Z,0,False,False,17,,14,,[],3,3,59193
-2128576,30.0,False,False,289,2021-04-04T15:30:00Z,0,False,False,11,,1,,[],4,3,59186
+2128577,30.0,False,False,290,2021-04-04T15:30:00Z,0,False,False,8,,2,,[],2,3,59187
 2128582,30.0,False,False,295,2021-04-04T18:30:00Z,0,False,False,3,,13,,[],3,4,59192
 2128579,30.0,False,False,292,2021-04-05T17:00:00Z,0,False,False,6,,7,,[],3,3,59189
 2128585,30.0,False,False,298,2021-04-05T19:15:00Z,0,False,False,19,,20,,[],4,3,59195
@@ -312,14 +316,10 @@ code,event,finished,finished_provisional,id,kickoff_time,minutes,provisional_sta
 2128594,31.0,False,False,307,2021-04-12T17:00:00Z,0,False,False,16,,18,,[],2,2,59204
 2128586,31.0,False,False,299,2021-04-12T19:15:00Z,0,False,False,7,,3,,[],4,2,59196
 2128596,32.0,False,False,309,2021-04-17T14:00:00Z,0,False,False,8,,1,,[],2,3,59206
-2128597,32.0,False,False,310,2021-04-17T14:00:00Z,0,False,False,12,,2,,[],5,3,59207
-2128598,32.0,False,False,311,2021-04-17T14:00:00Z,0,False,False,3,,5,,[],3,4,59208
 2128599,32.0,False,False,312,2021-04-17T14:00:00Z,0,False,False,17,,7,,[],3,3,59209
 2128600,32.0,False,False,313,2021-04-17T14:00:00Z,0,False,False,11,,10,,[],4,3,59210
-2128601,32.0,False,False,314,2021-04-17T14:00:00Z,0,False,False,18,,9,,[],2,4,59211
 2128602,32.0,False,False,315,2021-04-17T14:00:00Z,0,False,False,4,,13,,[],2,4,59212
 2128603,32.0,False,False,316,2021-04-17T14:00:00Z,0,False,False,19,,14,,[],4,3,59213
-2128604,32.0,False,False,317,2021-04-17T14:00:00Z,0,False,False,6,,16,,[],3,3,59214
 2128605,32.0,False,False,318,2021-04-17T14:00:00Z,0,False,False,15,,20,,[],2,3,59215
 2128606,33.0,False,False,319,2021-04-24T14:00:00Z,0,False,False,7,,1,,[],4,3,59216
 2128607,33.0,False,False,320,2021-04-24T14:00:00Z,0,False,False,18,,2,,[],2,3,59217

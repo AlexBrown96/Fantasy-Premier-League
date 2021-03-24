@@ -5,6 +5,7 @@ import re
 import codecs
 import pandas as pd
 import os
+pd.set_option("display.max_columns", None)
 
 def get_data(url):
     response = requests.get(url)
@@ -57,12 +58,14 @@ def get_player_data(id):
 def parse_player_data(id):
     matchesData = get_player_data(id)
     new_team_data = []
+    ids = pd.read_csv("../Fantasy-Premier-League/data/2020-21/understat/understat_player.csv")
+    pid = dict(zip(ids.id, ids.player_name)).get(id).replace(" ", "_")
     for data in matchesData:
         df = pd.DataFrame.from_dict(data, orient="index")
         new_team_data.append(list(df[0].values))
     ndf = pd.DataFrame([i for i in new_team_data], columns=matchesData[0].keys())
-    print(ndf)
-    breakpoint()
+    ndf.to_csv("../Fantasy-Premier-League/data/2020-21/understat/players/{}_{}.csv".format(pid, id))
+    #return ndf
 
 def parse_epl_data(outfile_base):
     teamData,playerData = get_epl_data()
@@ -79,7 +82,10 @@ def parse_epl_data(outfile_base):
 def main():
     #parse_epl_data('data/2020-21/understat')
     #get_player_data(318)
-    parse_player_data(318)
+    ids = pd.read_csv("../Fantasy-Premier-League/data/2020-21/understat/understat_player.csv")
+    for i in ids.id:
+        parse_player_data(i)
+    #parse_player_data(647)
 
 if __name__ == '__main__':
     main()
