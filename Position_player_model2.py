@@ -113,8 +113,10 @@ def feature_prediction(data, player_name, team_code, player_id):
     # TODO maybe look at fixture diff next game and look at previous?
     # TODO maybe look if player is from a "big 6" or "new promoted" team?
     # TODO maybe goal difference to games played
-    data = data[data["element"] == player_id]
+    #data = data[data["element"] == player_id]
     merged_data = pd.read_csv("temp_data_set.csv")
+    if player_id not in list(merged_data["element"]):
+        return 0, 0, 0
     merged_data = merged_data[merged_data["element"] == player_id]
     games_played = len(merged_data["GW"])
     value = merged_data["value"].iloc[-1]
@@ -169,9 +171,9 @@ def feature_prediction(data, player_name, team_code, player_id):
             linear = pickle.load(l)
         vals = [value, was_home, strength, opp_str, xA, xG]
     preds = np.array(vals)
-    predictions = linear.predict([preds])[0]
+    predictions = int(linear.predict([preds])[0])
     #breakpoint()
-    return multiplyer*predictions[0], value, pos
+    return multiplyer*predictions, value, pos
 
 
 def main():
