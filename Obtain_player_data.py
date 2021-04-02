@@ -73,7 +73,7 @@ for subdir, dirs, files in os.walk(players_dir):
                         current_player_data.loc[current_player_data["chance_of_playing_next_round"] == "None", "chance_of_playing_next_round"] = "100"
                         chance_playing = np.array(current_player_data["chance_of_playing_next_round"])[player_index]
                         if chance_playing == "100":
-                            points, value, pos = feature_prediction(data, web_name, team_code)
+                            points, value, pos = feature_prediction(data, web_name, team_code, player_id)
                             print("player {} has been trainined. Expected points: {}".format(web_name, points))
                             Records.append([web_name, points, value, pos, team_code, player_id])
                         else:

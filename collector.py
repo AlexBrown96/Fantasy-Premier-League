@@ -55,7 +55,8 @@ def merge_gw(gw, gw_directory):
         row["GW"] = gw
         rows += [row]
     out_path = os.path.join(gw_directory, merged_gw_filename)
-    fout = open(out_path,'a', encoding="utf-8")
+    #fout = open(out_path,'a', encoding="utf-8")
+    fout = open(out_path,'a')
     writer = csv.DictWriter(fout, fieldnames=fieldnames, lineterminator='\n')
     print(gw)
     if gw == 1:

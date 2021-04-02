@@ -64,7 +64,7 @@ def parse_player_data(id):
         df = pd.DataFrame.from_dict(data, orient="index")
         new_team_data.append(list(df[0].values))
     ndf = pd.DataFrame([i for i in new_team_data], columns=matchesData[0].keys())
-    ndf.to_csv("../Fantasy-Premier-League/data/2020-21/understat/players/{}_{}.csv".format(pid, id))
+    ndf.to_csv("../Fantasy-Premier-League/data/2020-21/understat/players/{}.csv".format(id))
     #return ndf
 
 def parse_epl_data(outfile_base):
