@@ -92,8 +92,6 @@ def train_model(data, heads, pos_n, training_counts=100, model="General model"):
     for count in range(training_counts):
         x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x_data, y_data, test_size=0.05)
         linear = linear_model.LinearRegression()
-        a1 = np.isnan(np.sum(x_train))
-        a2 = np.isnan(np.sum(y_train))
         linear.fit(x_train, y_train)
         acc = linear.score(x_test, y_test)
         models[0].append(acc)
@@ -119,11 +117,15 @@ def feature_prediction(data, player_name, team_code, player_id):
     merged_data = pd.read_csv("temp_data_set.csv")
     merged_data = merged_data[merged_data["element"] == player_id]
     games_played = len(merged_data["GW"])
+    value = merged_data["value"].iloc[-1]
+    pos = merged_data["position"].iloc[-1]
+    if games_played == 0:
+         return 0, value, pos
     xG = sum(merged_data["xG_dif"]) / games_played
     xA = sum(merged_data["xA_dif"]) / games_played
-    value = merged_data["value"].iloc[-1]
+
     cs = merged_data["clean_sheets"].sum() / games_played
-    pos = merged_data["position"].iloc[-1]
+
     # Fixtures
     future_fixtures_n = 4
     current_fixtures = current_week_fixtures.get_next_n_fixtures(future_fixtures_n)
@@ -132,41 +134,49 @@ def feature_prediction(data, player_name, team_code, player_id):
     team_h_n = list(current_fixtures["team_h_code"]).count(team_code)
     team_h = list(current_week_fixtures.get_current_week_fixtures()["team_h_code"])
     multiplyer = (team_a_n + team_h_n) / future_fixtures_n
-    # if data["chance_of_playing_next_round"] == "None":
-    #     cpnr = "100"
-    # multiplyer *= float(cpnr)/100
+
     # TODO this may fail for bgw/dgw and postponed fixtures
     games = dict(zip(team_a, team_h))
-    if team_code in games.keys():
+    if team_code in team_a:
         was_home = False
     else:
         was_home = True
-    str_opp = fd_in[fd_in["team_code"] == team_h[0]]["strength"]
-    str_t = merged_data["team_strength"].iloc[-1]
-    breakpoint()
+    for a, h in games.items():
+        if a == team_code:
+            opp_str = teams_in[teams_in["code"] == h]["strength"].iloc[0]
+            strength = teams_in[teams_in["code"] == a]["strength"].iloc[0]
+        elif h == team_code:
+            opp_str = teams_in[teams_in["code"] == a]["strength"].iloc[0]
+            strength = teams_in[teams_in["code"] == h]["strength"].iloc[0]
+
+    # opp_str = fd_in[fd_in["team_code"] == team_h[0]]["strength"]
+    # strength = merged_data["team_strength"].iloc[-1]
     # Predictions
     if pos == 1:
         with open('gk_model.p', "rb") as l:
             linear = pickle.load(l)
-        vals = [value, was_home, str_t, str_opp, cs]
+        vals = [value, was_home, strength, opp_str, cs]
     elif pos == 2:
         with open('def_model.p', "rb") as l:
             linear = pickle.load(l)
-        vals = [value, was_home, str_t, str_opp, xA, xG, cs]
+        vals = [value, was_home, strength, opp_str, xA, xG, cs]
     elif pos == 3:
         with open('mid_model.p', "rb") as l:
             linear = pickle.load(l)
-        vals = [value, was_home, str_t, str_opp, xA, xG]
+        vals = [value, was_home, strength, opp_str, xA, xG]
     elif pos == 4:
-        with open('gk_model.p', "rb") as l:
+        with open('fwd_model.p', "rb") as l:
             linear = pickle.load(l)
-        vals = [value, was_home, str_t, str_opp, xA, xG]
-    breakpoint()
+        vals = [value, was_home, strength, opp_str, xA, xG]
+    preds = np.array(vals)
+    predictions = linear.predict([preds])[0]
+    #breakpoint()
+    return multiplyer*predictions[0], value, pos
 
 
 def main():
-    # data_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/gws/merged_gw.csv")
-    # x = Organise_season_data(data_in.set_index("GW"))
+    #data_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/gws/merged_gw.csv")
+    #x = Organise_season_data(data_in.set_index("GW"))
     x = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players/Timo_Werner_117/gw.csv")
     feature_prediction(x, "TimoWerner", 8, 117)
     # with open('gk_model.p', "wb") as m:

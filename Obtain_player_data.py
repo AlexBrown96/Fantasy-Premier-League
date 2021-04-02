@@ -3,7 +3,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 import numpy as np
-from Position_player_model import feature_prediction
+from Position_player_model2 import feature_prediction
 
 
 pd_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players_raw.csv")

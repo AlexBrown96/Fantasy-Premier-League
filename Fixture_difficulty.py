@@ -56,6 +56,7 @@ def player_strength(team_id, position, fixture_home):
 def player_opposition(team_id, gameweek_number=1):
    pass
 
+
 def main():
     for week in gameweek:
         player_opposition(1, week)
