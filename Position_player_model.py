@@ -7,259 +7,184 @@ import pickle
 import time
 import gameweek
 import current_week_fixtures
+from understat import parse_player_data
+
+
+
 warnings.simplefilter(action='ignore', category=UnboundLocalError)
 gameweek = gameweek.get_recent_gameweek_id()
-
-start_time = time.time()
-
 pd.set_option("display.max_columns", None)
+
+# Import data sets
 pd_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players_raw.csv")
-us_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/understat/understat_player.csv", encoding='latin-1')
+us_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/understat/understat_player.csv")
 fd_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/fixtures.csv")
+#
 us_in["player_name"] = [(''.join(filter(lambda j: j.isalpha(), i))) for i in us_in["player_name"]]
 player_raw_data = np.array(pd_in)
 understat_raw_data = np.array(us_in)
 teams_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/teams.csv")
 teams_raw = np.array(teams_in)
-pd_heads = ["element_type", "team", "now_cost"]
+
+# Headers
+pd_heads = ["element", "team", "now_cost"]
 us_heads = ["games", "xG", "xA", "npxG"]
-
-def selected_stats(data, heads, row_index):
-    return data[heads].loc[row_index]
-
-
-def Organise_data_set(season_data):
-    '''
-    Function takes merged gw data and organises stats
-    for each player from the season.
-
-    Returns the following features as an npy array:
-
-    "total_points", "pos", "minutes", "now_cost",
-    "was_home", "ict_index", "xG", "xA", "bonus",
-    "clean_sheets", "strength", "saves"
-
-    '''
-    pos_list = []
-    team_list = []
-    cost_list = []
-    xG_list = []
-    xA_list = []
-    games_list = []
-    # headers pos, min, team, was_home, xCleansheet, xG, xA
-    season_data["id"] = season_data["element"]
-    season_data["name"] = [(''.join(filter(lambda j: j.isalpha(), i))) for i in season_data["name"]]
-
-    # First get the player's team, position and fixture difficulties
-    for row, val in enumerate(season_data["id"]):
-        player_id_data = player_raw_data[:, 30]
-        player_index = (np.nonzero(player_id_data == int(val))[0][0])
-        # Obtain player data from the selected column heading
-        extra_data = selected_stats(pd_in, pd_heads, player_index)
-        pos_list.append(extra_data["element_type"])
-        team_list.append(extra_data["team"])
-        cost_list.append(extra_data["now_cost"])
-
-    print("finished appending data from players")
-    for row, val in enumerate(season_data["name"]):
-        # Understat data
-        val.replace(" ", "")
-        player_id_data_us = us_in["player_name"]
-        if val in list(us_in["player_name"]):
-            player_index_us = (np.nonzero(player_id_data_us == val)[0][0])
-            extra_data_us = selected_stats(us_in, us_heads, player_index_us)
-            xG_list.append(extra_data_us["xG"])
-            xA_list.append(extra_data_us["xA"])
-            games_list.append(extra_data_us["games"])
-        else:
-            xG_list.append(0)
-            xA_list.append(0)
-            games_list.append(0)
-
-    xG_list = [np.true_divide(x, y) if y != 0 else 0 for x, y in np.array(list(zip(xG_list, games_list)))]
-    xA_list = [np.true_divide(x, y) if y != 0 else 0 for x, y in np.array(list(zip(xA_list, games_list)))]
-    season_data["pos"] = pos_list
-    season_data["now_cost"] = cost_list
-    season_data["team"] = team_list
-    season_data["xG"] = xG_list
-    season_data["xA"] = xA_list
-    season_data["games"] = games_list
-    print("finished appending season data")
-    # Fixture difficulty
-    strength = []
-    for team in season_data["team"]:
-        team_index = (np.nonzero(teams_raw == team)[0][0])
-        extra_data_teams = selected_stats(teams_in, ["strength"], team_index)
-        strength.append(extra_data_teams["strength"])
-    season_data["strength"] = strength
-    # Modify the input data based on the selected features
+gk_heads = ["total_points", "now_cost", "was_home", "team_strength", "opp_strength", "clean_sheets", "ict_index", "minutes"]
+def_heads = ["total_points", "now_cost", "was_home", "team_strength", "opp_strength", "xA_dif", "xG_dif", "clean_sheets", "ict_index", "minutes"]
+mid_heads = ["total_points", "now_cost", "was_home", "team_strength", "opp_strength", "xA_dif", "xG_dif", "ict_index", "minutes"]
+fwd_heads = ["total_points", "now_cost", "was_home", "team_strength", "opp_strength", "xA_dif", "xG_dif", "ict_index", "minutes"]
 
 
-    # Get opponent_team_strength
-    str_a_h = []
-    str_a_a = []
-    str_d_h = []
-    str_d_a = []
-    for team in season_data["opponent_team"]:
-        opp_index = (np.nonzero(teams_raw == team))[0][0]
-        extra_data_teams = selected_stats(teams_in, ["strength_attack_home", "strength_attack_away", "strength_defence_home", "strength_defence_away"], opp_index)
-        str_a_h.append(extra_data_teams["strength_attack_home"])
-        str_a_a.append(extra_data_teams["strength_attack_away"])
-        str_d_h.append(extra_data_teams["strength_defence_home"])
-        str_d_a.append(extra_data_teams["strength_defence_away"])
-    # Drop the predicted points label to produce x and y
-    season_data["strength_attack_home"] = str_a_h
-    season_data["strength_attack_away"] = str_a_a
-    season_data["strength_defence_home"] = str_d_h
-    season_data["strength_defence_away"] = str_d_a
-    heads = ["name", "total_points", "pos", "minutes", "now_cost", "was_home", "ict_index", "xG", "xA", "clean_sheets", "strength", "saves", "opponent_team", "strength_attack_home", "strength_attack_away", "strength_defence_home", "strength_defence_away"]
-    player_data = season_data[heads]
-    player_data.to_csv('temp.csv', index=False)
-    # x = np.array(player_data.drop(["total_points"], 1))
-    # y = np.array(player_data["total_points"])
-    print("Organising time of {} rows of player data: {} seconds".format(len(season_data["name"]), time.time()-start_time))
-    return player_data
+def Organise_season_data(data_set):
+    #
+    data_set = data_set.rename(columns={"id": "element"})
+    # map positions to numerical values
+    data_set["position"] = data_set["position"].map({"FWD": 4, "MID": 3, "DEF": 2, "GK": 1})
+    # remove anyone who did not play so the dataset is smaller
+    data_set = data_set[data_set.minutes > 0]
+    # gather team data
+    data_set["team_code"] = data_set["team"].map(dict(zip(teams_in.name, teams_in.code)))
+    # gather game strength
+    data_set["team_strength"] = data_set["team_code"].map(dict(zip(teams_in.code, teams_in.strength)))
+    data_set["opp_strength"] = data_set["opponent_team"].map(dict(zip(teams_in.id, teams_in.strength)))
+    # gather further player info
+    data_set["now_cost"] = data_set["element"].map(dict(zip(pd_in.id, pd_in.now_cost)))
+    # understat data
+    # understat names
+    w_names = pd.read_csv("../Fantasy-Premier-League/data/2020-21/understat/players/weird_names.csv", names=["read_name", "us_name"])
+    w_name_dict = dict(zip(w_names.read_name, w_names.us_name))
+    #na_names = data_set.loc[data_set["us_id"].isna()]["name"].unique()
+    data_set["name"] = [(''.join(filter(lambda j: j.isalpha(), i))) for i in data_set["name"]]
+    data_set["name"] = data_set["name"].replace(w_name_dict)
+    data_set["name"] = [(''.join(filter(lambda j: j.isalpha(), i))) for i in data_set["name"]]
+    data_set["us_id"] = data_set["name"].map(dict(zip(us_in.player_name, us_in.id)))
+    data_set["time"] = [i[:10] for i in data_set["kickoff_time"]]
 
-########################################################################################################################
+    data_set = data_set.sort_values(["us_id", "GW"])
 
-data_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/gws/merged_gw.csv")
-x = None
+    for n in data_set["us_id"].unique():
+        stats = ["xG", "xA"]
+        for stat in stats:
+            try:
+                us_player_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/understat/players/{}.csv".format(str(int(n))))
+                temp = data_set.loc[data_set["us_id"] == n]["time"].map(dict(zip(us_player_data.date, us_player_data[stat])))
+                data_set.loc[data_set.us_id == n, stat] = temp
+                print(round(100*np.where(data_set["us_id"].unique()==n)[0][0]/len(data_set["us_id"].unique()),3), "% Done")
+            except (FileNotFoundError, IOError):
+                print("player {} not found in files...".format(n))
 
-#x = Organise_data_set(data_in)
-
-#Save organised data
-
-if x is not None:
-    with open('x.p', "wb") as x_data:
-        pickle.dump(x, x_data)
-
-########################################################################################################################
-
-gk_heads = ["total_points", "now_cost", "was_home", "ict_index", "clean_sheets", "saves", "strength_defence_home", "strength_defence_away"]
-def_heads = ["total_points", "now_cost", "was_home", "ict_index", "clean_sheets", "xG", "xA", "strength_defence_home", "strength_defence_away"]
-mid_heads = ["total_points", "now_cost", "was_home", "ict_index", "xG", "xA", "strength_attack_home", "strength_attack_away", "strength_defence_home", "strength_defence_away"]
-fwd_heads = ["total_points", "now_cost", "was_home", "ict_index", "xG", "xA", "strength_attack_home", "strength_attack_away", ]
+    print("finished_organising_data")
+    data_set["xG"] = data_set["xG"].fillna(0)
+    data_set["xA"] = data_set["xA"].fillna(0)
+    data_set["xG_dif"] = data_set["goals_scored"] - data_set["xG"]
+    data_set["xA_dif"] = data_set["assists"] - data_set["xA"]
+    data_set.to_csv("temp_data_set.csv")
+    return data_set
 
 
-def train(x_data, heads, pos_n=1, training_counts=1):
-    models = [[], []]
-    print("Training model, with {} training counts".format(training_counts))
-    temp = x_data[pd.DataFrame(x_data).pos == pos_n][heads]
-    #temp["opponent_team"] = temp["opponent_team"].astype(str)
-    x_data = np.array(temp.drop(["total_points"], 1))
-    y_data = np.array(temp["total_points"])
-    for counts in range(training_counts):
-        x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x_data, y_data, test_size=0.1)
-
+def train_model(data, heads, pos_n, training_counts=100, model="General model"):
+    # TODO maybe train with players who have played more than x games
+    models = [[],[]]
+    data = data[data.position == pos_n][heads]
+    print("Training model with {} counts".format(training_counts))
+    x_data = np.array(data.drop(["total_points"], 1))
+    y_data = np.array(data["total_points"])
+    for count in range(training_counts):
+        x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x_data, y_data, test_size=0.05)
         linear = linear_model.LinearRegression()
         linear.fit(x_train, y_train)
-
         acc = linear.score(x_test, y_test)
         models[0].append(acc)
         models[1].append(linear)
+
     best_acc = max(models[0])
     best_linear = models[1][models[0].index(best_acc)]
-    print("Accuracy: ", best_acc)
+    print(model, ":", "Accuracy : ", best_acc)
     return best_linear
 
 
-# with open('x.p', 'rb') as x:
-#     x = pickle.load(x)
-# with open('gk_model.p', "wb") as m:
-#     pickle.dump(train(x, gk_heads, 1, 3000), m)
-# with open('def_model.p', "wb") as m:
-#     pickle.dump(train(x, def_heads, 2, 3000), m)
-# with open('mid_model.p', "wb") as m:
-#     pickle.dump(train(x, mid_heads, 3, 3000), m)
-# with open('fwd_model.p', "wb") as m:
-#     pickle.dump(train(x, fwd_heads, 4, 3000), m)
-
-
-########################################################################################################################
-us_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/understat/understat_player.csv", encoding='latin-1')
-us_in["player_name"] = [(''.join(filter(lambda j: j.isalpha(), i))) for i in us_in["player_name"]]
-current_player_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players_raw.csv")
-current_player_data["name"] = [(''.join(filter(lambda j: j.isalpha(), "{}{}".format(x,y)))) for x,y in
-                               list(zip(current_player_data["first_name"], current_player_data["second_name"]))]
-current_teams = pd.read_csv("../Fantasy-Premier-League/data/2020-21/teams.csv")
-
-
-def feature_prediction(data, player_name, team_code):
+def feature_prediction(team_code, player_id):
     '''
-    ["total_points", "pos", "minutes", "team", "now_cost",
-             "was_home", "ict_index", "xG", "xA", "clean_sheets", "strength"]
+    gk_heads = ["total_points", "now_cost", "was_home", "team_strength", "opp_strength", "clean_sheets"]
+    def_heads = ["total_points", "now_cost", "was_home", "team_strength", "opp_strength", "xA_dif", "xG_dif", "clean_sheets"]
+    mid_heads = ["total_points", "now_cost", "was_home", "team_strength", "opp_strength", "xA_dif", "xG_dif"]
+    fwd_heads = ["total_points", "now_cost", "was_home", "team_strength", "opp_strength", "xA_dif", "xG_dif"]
     '''
-    # Get last seasons data
-    # Assists and goals scored from understat
-    player_id_data_us = understat_raw_data[:, 1]
-    try:
-        player_index_us = (np.nonzero(player_id_data_us == player_name)[0][0])
-    except:
-        xG = 0
-        xA = 0
-    else:
-        extra_data_us = selected_stats(us_in, us_heads, player_index_us)
-        games = np.array(extra_data_us["games"])
-        xG = np.array(extra_data_us["xG"]) / games
-        xA = np.array(extra_data_us["xA"]) / games
-    games = len(data["saves"][:])
-    saves = np.sum(np.array(data["saves"])[:]) / games
-    cs = np.sum(np.array(data["clean_sheets"])[:]) / games
-    # Get gameweek
+    # TODO maybe look at fixture diff next game and look at previous?
+    # TODO maybe look if player is from a "big 6" or "new promoted" team?
+    # TODO maybe goal difference to games played
+    #data = data[data["element"] == player_id]
+    merged_data = pd.read_csv("temp_data_set.csv")
+    if player_id not in list(merged_data["element"]):
+        return 0, 0, 0
+    merged_data = merged_data[merged_data["element"] == player_id][-10:]
+    games_played = len(merged_data["GW"])
+    value = merged_data["value"].iloc[-1]
+    pos = merged_data["position"].iloc[-1]
+    minutes = sum(merged_data["minutes"][-3:])/ 3
+    ict = merged_data["ict_index"].iloc[-1]
+    if games_played == 0:
+         return 0, value, pos
+    xG = sum(merged_data["xG_dif"]) / games_played
+    xA = sum(merged_data["xA_dif"]) / games_played
 
-    # Values from current data
-    player_index_cp = (np.nonzero(np.array(current_player_data["name"]) == player_name)[0][0])
-    extra_data = selected_stats(current_player_data,
-                                ["now_cost", "element_type", "team_code", "ict_index",
-                                 "selected_by_percent", "points_per_game", "minutes", "chance_of_playing_next_round"], player_index_cp)
-    value = extra_data["now_cost"]
-    pos = extra_data["element_type"]
-    team = extra_data["team_code"]
-    ict = extra_data["ict_index"] / games
-    cpnr = extra_data["chance_of_playing_next_round"]
-    # Get fixtures for the team that the player is playing for
-    current_fixtures = current_week_fixtures.get_next_n_fixtures(4)
-    team_a_n = list(current_fixtures["team_a_code"]).count(team)
+    cs = merged_data["clean_sheets"].sum() / games_played
+
+    # Fixtures
+    future_fixtures_n = 2
+    current_fixtures = current_week_fixtures.get_next_n_fixtures(future_fixtures_n)
+    team_a_n = list(current_fixtures["team_a_code"]).count(team_code)
     team_a = list(current_week_fixtures.get_current_week_fixtures()["team_a_code"])
-    team_h_n = list(current_fixtures["team_h_code"]).count(team)
+    team_h_n = list(current_fixtures["team_h_code"]).count(team_code)
     team_h = list(current_week_fixtures.get_current_week_fixtures()["team_h_code"])
-    multiplyer = (team_a_n + team_h_n) / 4
-    # Chance of playing next round multiplyer
-    if cpnr == "None":
-        cpnr = "100"
-    multiplyer *= float(cpnr)/100
-    if team in team_a:
+    multiplyer = (team_a_n + team_h_n) / future_fixtures_n
+    # TODO this may fail for bgw/dgw and postponed fixtures
+    #games = dict(zip(team_a, team_h))
+    opp_list = list(current_fixtures[current_fixtures["team_a_code"] == team_code]["team_h_code"]) + list(current_fixtures[current_fixtures["team_h_code"] == team_code]["team_a_code"])
+    if team_code in team_a:
         was_home = False
     else:
         was_home = True
+    tot_str = 0
+    for opp in opp_list:
+        tot_str += teams_in[teams_in["code"] == opp]["strength"].iloc[0]
+    opp_str = tot_str / len(opp_list)
+    strength = teams_in[teams_in["code"] == team_code]["strength"].iloc[0]
 
-    # Get team strength for upcoming fixtures
-    opp_index = (np.nonzero(teams_raw == team_code))[0][0]
-    extra_data_teams = selected_stats(teams_in, ["strength_attack_home", "strength_attack_away", "strength_defence_home", "strength_defence_away"], opp_index)
-    str_a_h = (extra_data_teams["strength_attack_home"])
-    str_a_a = (extra_data_teams["strength_attack_away"])
-    str_d_h = (extra_data_teams["strength_defence_home"])
-    str_d_a = (extra_data_teams["strength_defence_away"])
-
-    # Predictions
     if pos == 1:
         with open('gk_model.p', "rb") as l:
             linear = pickle.load(l)
-        vals = [value, was_home, ict, cs, saves, str_d_h, str_d_a]
+        vals = [value, was_home, strength, opp_str, cs, ict, minutes]
     elif pos == 2:
         with open('def_model.p', "rb") as l:
             linear = pickle.load(l)
-        vals = [value, was_home, ict, cs, xG, xA, str_d_h, str_d_a]
+        vals = [value, was_home, strength, opp_str, xA, xG, cs, ict, minutes]
     elif pos == 3:
         with open('mid_model.p', "rb") as l:
             linear = pickle.load(l)
-        vals = [value, was_home, ict, xG, xA, str_d_h, str_d_a, str_a_h, str_a_a]
+        vals = [value, was_home, strength, opp_str, xA, xG, ict, minutes]
     elif pos == 4:
-        with open('gk_model.p', "rb") as l:
+        with open('fwd_model.p', "rb") as l:
             linear = pickle.load(l)
-        vals = [value, was_home, ict, xG, xA, str_a_h, str_a_a]
-    # TODO could this be done for multiple future gameweeks eg 3 gws
-    predictions = np.array(vals)
-    predictions = linear.predict([predictions])
-    #   ["total_points", "pos", "minutes", "now_cost", "was_home", "ict_index", "xG", "xA", "clean_sheets", "strength", "saves"]
-    return multiplyer*predictions[0], value, pos
+        vals = [value, was_home, strength, opp_str, xA, xG, ict, minutes]
+    preds = np.array(vals)
+    predictions = float(linear.predict([preds])[0])
+    return multiplyer*predictions, value, pos
+
+
+def main():
+    # data_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/gws/merged_gw.csv")
+    # x = Organise_season_data(data_in.set_index("GW"))
+    # with open('gk_model.p', "wb") as m:
+    #     pickle.dump(train_model(x, gk_heads, 1, 4000, "gk model"), m)
+    # with open('def_model.p', "wb") as m:
+    #     pickle.dump(train_model(x, def_heads, 2, 5000, "def model"), m)
+    # with open('mid_model.p', "wb") as m:
+    #     pickle.dump(train_model(x, mid_heads, 3, 10000, "mid model"), m)
+    # with open('fwd_model.p', "wb") as m:
+    #     pickle.dump(train_model(x, fwd_heads, 4, 10000, "fwd model"), m)
+    x = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players/Timo_Werner_117/gw.csv")
+    print(feature_prediction(6, 388))
+
+if __name__ == "__main__":
+    main()
