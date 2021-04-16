@@ -4,11 +4,9 @@ import warnings
 import pandas as pd
 import numpy as np
 import pickle
-import time
 import gameweek
 import current_week_fixtures
-from understat import parse_player_data
-
+from tqdm import tqdm
 
 
 warnings.simplefilter(action='ignore', category=UnboundLocalError)
@@ -33,10 +31,13 @@ gk_heads = ["total_points", "now_cost", "was_home", "team_strength", "opp_streng
 def_heads = ["total_points", "now_cost", "was_home", "team_strength", "opp_strength", "xA_dif", "xG_dif", "clean_sheets", "ict_index", "minutes"]
 mid_heads = ["total_points", "now_cost", "was_home", "team_strength", "opp_strength", "xA_dif", "xG_dif", "ict_index", "minutes"]
 fwd_heads = ["total_points", "now_cost", "was_home", "team_strength", "opp_strength", "xA_dif", "xG_dif", "ict_index", "minutes"]
+#def_heads = ["total_points", "now_cost", "was_home", "team_strength", "opp_strength", "xA_dif", "xG_dif", "clean_sheets", "ict_index", "minutes"]
 
 
 def Organise_season_data(data_set):
-    #
+    '''
+    data_set: Merged_gws from data/year/gws
+    '''
     data_set = data_set.rename(columns={"id": "element"})
     # map positions to numerical values
     data_set["position"] = data_set["position"].map({"FWD": 4, "MID": 3, "DEF": 2, "GK": 1})
@@ -59,19 +60,18 @@ def Organise_season_data(data_set):
     data_set["name"] = [(''.join(filter(lambda j: j.isalpha(), i))) for i in data_set["name"]]
     data_set["us_id"] = data_set["name"].map(dict(zip(us_in.player_name, us_in.id)))
     data_set["time"] = [i[:10] for i in data_set["kickoff_time"]]
-
     data_set = data_set.sort_values(["us_id", "GW"])
-
-    for n in data_set["us_id"].unique():
-        stats = ["xG", "xA"]
-        for stat in stats:
-            try:
-                us_player_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/understat/players/{}.csv".format(str(int(n))))
-                temp = data_set.loc[data_set["us_id"] == n]["time"].map(dict(zip(us_player_data.date, us_player_data[stat])))
-                data_set.loc[data_set.us_id == n, stat] = temp
-                print(round(100*np.where(data_set["us_id"].unique()==n)[0][0]/len(data_set["us_id"].unique()),3), "% Done")
-            except (FileNotFoundError, IOError):
-                print("player {} not found in files...".format(n))
+    with tqdm(total=len(data_set["us_id"].unique()), position=0, leave=True, desc="Merging fpl and understat data") as pbar:
+        for n in data_set["us_id"].unique():
+            stats = ["xG", "xA"]
+            pbar.update()
+            for stat in stats:
+                try:
+                    us_player_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/understat/players/{}.csv".format(str(int(n))))
+                    temp = data_set.loc[data_set["us_id"] == n]["time"].map(dict(zip(us_player_data.date, us_player_data[stat])))
+                    data_set.loc[data_set.us_id == n, stat] = temp
+                except (FileNotFoundError, IOError):
+                    print("player {} not found in files...".format(n))
 
     print("finished_organising_data")
     data_set["xG"] = data_set["xG"].fillna(0)
@@ -116,13 +116,15 @@ def feature_prediction(team_code, player_id):
     #data = data[data["element"] == player_id]
     merged_data = pd.read_csv("temp_data_set.csv")
     if player_id not in list(merged_data["element"]):
-        return 0, 0, 0
-    merged_data = merged_data[merged_data["element"] == player_id][-10:]
+        return 0, 0, 0, 0
+    merged_data = merged_data[merged_data["element"] == player_id][-5:]
     games_played = len(merged_data["GW"])
     value = merged_data["value"].iloc[-1]
     pos = merged_data["position"].iloc[-1]
     minutes = sum(merged_data["minutes"][-3:])/ 3
-    ict = merged_data["ict_index"].iloc[-1]
+    if minutes <= 45:
+        return 0, 0, 0, 0
+    ict = sum(merged_data["ict_index"]) / games_played
     if games_played == 0:
          return 0, value, pos
     xG = sum(merged_data["xG_dif"]) / games_played
@@ -131,13 +133,14 @@ def feature_prediction(team_code, player_id):
     cs = merged_data["clean_sheets"].sum() / games_played
 
     # Fixtures
-    future_fixtures_n = 2
+    future_fixtures_n = 4
     current_fixtures = current_week_fixtures.get_next_n_fixtures(future_fixtures_n)
     team_a_n = list(current_fixtures["team_a_code"]).count(team_code)
     team_a = list(current_week_fixtures.get_current_week_fixtures()["team_a_code"])
     team_h_n = list(current_fixtures["team_h_code"]).count(team_code)
-    team_h = list(current_week_fixtures.get_current_week_fixtures()["team_h_code"])
+    team_count = list(current_week_fixtures.get_current_week_fixtures()["team_h_code"]) + team_a
     multiplyer = (team_a_n + team_h_n) / future_fixtures_n
+    captain_multiplyer = team_count.count(team_code)
     # TODO this may fail for bgw/dgw and postponed fixtures
     #games = dict(zip(team_a, team_h))
     opp_list = list(current_fixtures[current_fixtures["team_a_code"] == team_code]["team_h_code"]) + list(current_fixtures[current_fixtures["team_h_code"] == team_code]["team_a_code"])
@@ -169,7 +172,7 @@ def feature_prediction(team_code, player_id):
         vals = [value, was_home, strength, opp_str, xA, xG, ict, minutes]
     preds = np.array(vals)
     predictions = float(linear.predict([preds])[0])
-    return multiplyer*predictions, value, pos
+    return multiplyer*predictions, value, pos, captain_multiplyer*predictions
 
 
 def main():
@@ -183,7 +186,7 @@ def main():
     #     pickle.dump(train_model(x, mid_heads, 3, 10000, "mid model"), m)
     # with open('fwd_model.p', "wb") as m:
     #     pickle.dump(train_model(x, fwd_heads, 4, 10000, "fwd model"), m)
-    x = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players/Timo_Werner_117/gw.csv")
+    # x = pd.read_csv("../Fantasy-Premier-League/data/2020-21/players/Timo_Werner_117/gw.csv")
     print(feature_prediction(6, 388))
 
 if __name__ == "__main__":

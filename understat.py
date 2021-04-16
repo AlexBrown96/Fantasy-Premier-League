@@ -58,8 +58,8 @@ def get_player_data(id):
 def parse_player_data(id):
     matchesData = get_player_data(id)
     new_team_data = []
-    ids = pd.read_csv("../Fantasy-Premier-League/data/2020-21/understat/understat_player.csv")
-    pid = dict(zip(ids.id, ids.player_name)).get(id).replace(" ", "_")
+    #ids = pd.read_csv("../Fantasy-Premier-League/data/2020-21/understat/understat_player.csv")
+    #pid = dict(zip(ids.id, ids.player_name)).get(id).replace(" ", "_")
     for data in matchesData:
         df = pd.DataFrame.from_dict(data, orient="index")
         new_team_data.append(list(df[0].values))

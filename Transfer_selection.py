@@ -75,8 +75,7 @@ class TransferOptimiser:
         # objective function:
         model += self.get_objective(starters, sub_decisions, captain_decisions, sub_factor, transfer_penalty, self.expected_scores), "Objective"
         status = model.solve()
-
-        print("Solver status: {}".format(status))
+        #print("Solver status: {}".format(status))
 
         return transfer_in_decisions, transfer_out_decisions, starters, sub_decisions, captain_decisions
 
