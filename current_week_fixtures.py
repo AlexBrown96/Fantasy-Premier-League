@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from gameweek import get_recent_gameweek_id
 
-gameweek_num = get_recent_gameweek_id()+1
+gameweek_num = get_recent_gameweek_id()
 # Get next the fixtures for next week
 def get_current_week_fixtures():
     fixture_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/fixtures.csv")

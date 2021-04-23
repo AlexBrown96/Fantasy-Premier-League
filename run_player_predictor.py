@@ -13,11 +13,13 @@ from collector import merge_all_gws
 predict = True
 select_team = True
 gather_understat = False
-organise_data = False
-get_team = False
+organise_data = True
+get_team = True
+current_gameweek = get_recent_gameweek_id()
+
 
 def main():
-    file = Path("../Fantasy-Premier-League/data/2020-21/gws/gw{}.csv".format(get_recent_gameweek_id()))
+    file = Path("../Fantasy-Premier-League/data/2020-21/gws/gw{}.csv".format(current_gameweek))
     ids = pd.read_csv("../Fantasy-Premier-League/data/2020-21/understat/understat_player.csv")
     if gather_understat:
         print("Gathering player understat data from webpages...this make take some time")
@@ -27,7 +29,7 @@ def main():
     if not file.is_file():
         print("Gathering fpl data from webpages")
         parse_data()
-        merge_all_gws(get_recent_gameweek_id(), "../Fantasy-Premier-League/data/2020-21/gws")
+        merge_all_gws(current_gameweek, "../Fantasy-Premier-League/data/2020-21/gws")
     if get_team:
         team_id = 162673
         print("Gathering data for team {} from webpages".format(team_id))
@@ -40,7 +42,7 @@ def main():
         obtain_player_data()
     if select_team:
         print("Selecting team based on predictions")
-        team_selection(102.4, 0.2)
+        team_selection(102.4, 0.2, current_gameweek)
 
 
 if __name__ == "__main__":

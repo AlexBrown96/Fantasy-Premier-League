@@ -3,13 +3,14 @@ import pulp
 import numpy as np
 import gameweek
 from Transfer_selection import TransferOptimiser
-trained_player_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/selections/player_predictions_week_{}.csv".format(gameweek.get_recent_gameweek_id()))
+
 
 # Code taken from https://github.com/nuebar/forecasting-fantasy-football
 # nuebar's code:
 
 
-def team_selection(budget=100, sf=0.2):
+def team_selection(budget=100, sf=0.2, current_gameweek=gameweek.get_recent_gameweek_id()):
+    trained_player_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/selections/player_predictions_week_{}.csv".format(current_gameweek))
     def select_team(expected_scores, prices, positions, clubs, total_budget=budget, sub_factor=sf):
         num_players = len(expected_scores)
         model = pulp.LpProblem("Constrained value maximisation", pulp.LpMaximize)
@@ -105,14 +106,14 @@ def team_selection(budget=100, sf=0.2):
     team_selection = pd.DataFrame([i for i in temp], columns=["name", "points", "value", "pos", "team_code", "type"])
     #print(team_selection)
     # TODO change folder
-    team_selection.to_csv('team_selection_week{}.csv'.format(gameweek.get_recent_gameweek_id()), index=False)
+    team_selection.to_csv('team_selection_week{}.csv'.format(current_gameweek), index=False)
 
     # Transfers
 
     ###############################################################
     # Ensure current team is picked
 
-    current_team = pd.read_csv("../Fantasy-Premier-League/team_162673_data20_21/picks_{}.csv".format(gameweek.get_recent_gameweek_id()))
+    current_team = pd.read_csv("../Fantasy-Premier-League/team_162673_data20_21/picks_{}.csv".format(current_gameweek))
 
 
     def conv_team(data):
@@ -126,7 +127,7 @@ def team_selection(budget=100, sf=0.2):
         data["points"] = pd.Series(points)
         return data
 
-    df = conv_team(pd.read_csv("../Fantasy-Premier-League/data/2020-21/selections/player_predictions_week_{}.csv".format(gameweek.get_recent_gameweek_id())))
+    df = conv_team(pd.read_csv("../Fantasy-Premier-League/data/2020-21/selections/player_predictions_week_{}.csv".format(current_gameweek)))
     expected_scores = df["points"]
     prices = pd.Series([i/10 for i in df["value"]])
     positions = df["pos"]
