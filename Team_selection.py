@@ -9,7 +9,7 @@ from Transfer_selection import TransferOptimiser
 # nuebar's code:
 
 
-def team_selection(budget=100, sf=0.2, current_gameweek=gameweek.get_recent_gameweek_id()):
+def team_selection(budget=104.9, sf=0.2, current_gameweek=gameweek.get_recent_gameweek_id()):
     trained_player_data = pd.read_csv("../Fantasy-Premier-League/data/2020-21/selections/player_predictions_week_{}.csv".format(current_gameweek))
     def select_team(expected_scores, prices, positions, clubs, total_budget=budget, sub_factor=sf):
         num_players = len(expected_scores)
