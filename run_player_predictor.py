@@ -13,8 +13,7 @@ from collector import merge_all_gws
 predict = True
 select_team = True
 gather_understat = False
-organise_data = True
-
+organise_data = False
 get_team = True
 current_gameweek = get_recent_gameweek_id()
 

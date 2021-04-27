@@ -8,7 +8,7 @@ import gameweek
 import current_week_fixtures
 from tqdm import tqdm
 
-
+poly = sklearn.preprocessing.PolynomialFeatures(degree=2)
 warnings.simplefilter(action='ignore', category=UnboundLocalError)
 gameweek = gameweek.get_recent_gameweek_id()
 pd.set_option("display.max_columns", None)
@@ -88,7 +88,7 @@ def Organise_season_data(data_set):
     return data_set
 
 
-def train_model(data, heads, pos_n, training_counts=100, model="General model"):
+def train_model(data, heads, training_counts=100, model="General model"):
     # TODO maybe train with players who have played more than x games
     data = data[data.minutes != "0"]
     models = [[], []]
@@ -99,12 +99,15 @@ def train_model(data, heads, pos_n, training_counts=100, model="General model"):
     y_data = np.array(data["total_points"])
     for count in range(training_counts):
         x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x_data, y_data, test_size=0.05)
+        #linear = linear_model.LinearRegression()
+        x_poly = poly.fit_transform(x_train)
+        poly.fit(x_poly, y_train)
         linear = linear_model.LinearRegression()
-        linear.fit(x_train, y_train)
-        acc = linear.score(x_test, y_test)
+        # linear.fit(x_train, y_train)
+        linear.fit(x_poly, y_train)
+        acc = linear.score(poly.fit_transform(x_test), y_test)
         models[0].append(acc)
         models[1].append(linear)
-
     best_acc = max(models[0])
     best_linear = models[1][models[0].index(best_acc)]
     print(model, ":", "Accuracy : ", best_acc)
@@ -172,28 +175,27 @@ def feature_prediction(team_code, player_id):
     with open('general_model.p', "rb") as saved_model:
         linear = pickle.load(saved_model)
     vals = [value, was_home, strength, opp_str, xA, xG, cs, ict, minutes, big_six, big_six_opp, last_points, gk, defe, mid, fwd]
-    predictions = float(linear.predict([np.array(vals)])[0])
-    pd.set_option('display.width', 200)
-    df = pd.DataFrame([linear.coef_, vals, linear.coef_ * vals], index=["coef", "input_val", "sum"],
-                      columns=["now_cost", "was_home", "team_strength",
-                               "opp_strength", "xA_dif", "xG_dif", "clean_sheets",
-                               "ict_index", "minutes", "big_six", "big_six_opp",
-                               "last_points", "gk", "def", "mid", "fwd"])
-    print(df)
-    breakpoint()
+    predictions = float(linear.predict([poly.fit_transform([np.array(vals)])[0]]))
+    # pd.set_option('display.width', 200)
+    # df = pd.DataFrame([linear.coef_, vals, linear.coef_ * vals], index=["coef", "input_val", "sum"],
+    #                   columns=["now_cost", "was_home", "team_strength",
+    #                            "opp_strength", "xA_dif", "xG_dif", "clean_sheets",
+    #                            "ict_index", "minutes", "big_six", "big_six_opp",
+    #                            "last_points", "gk", "def", "mid", "fwd"])
+    # print(df)
     return multiplier*predictions, value, pos, captain_multiplier*predictions
 
 
 def main():
     # data_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/gws/merged_gw.csv")
     # x = Organise_season_data(data_in.set_index("GW"))
-    # #x = pd.read_csv("temp_data_set.csv")
+    x = pd.read_csv("temp_data_set.csv")
     # for model in range(1, 5, 1):
     #     model_type = {1: 'gk_model.p', 2: 'def_model.p', 3: 'mid_model.p', 4: 'fwd_model.p'}.get(model)
     #     with open(model_type, "wb") as m:
     #         pickle.dump(train_model(x, heads, 1, 1000, model_type), m)
-    # with open("general_model.p", "wb") as m:
-    #     pickle.dump(train_model(x, heads, 1, 1000, "General_model.p"), m)
+    with open("general_model.p", "wb") as m:
+        pickle.dump(train_model(x, heads, 100, "General_model.p"), m)
     print(feature_prediction(35, 481))
 
 if __name__ == "__main__":
