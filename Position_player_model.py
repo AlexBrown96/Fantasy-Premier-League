@@ -183,20 +183,20 @@ def feature_prediction(team_code, player_id):
     #                            "ict_index", "minutes", "big_six", "big_six_opp",
     #                            "last_points", "gk", "def", "mid", "fwd"])
     # print(df)
-    return multiplier*predictions, value, pos, captain_multiplier*predictions
+    return captain_multiplier*predictions, value, pos, 2*captain_multiplier*predictions
 
 
 def main():
     # data_in = pd.read_csv("../Fantasy-Premier-League/data/2020-21/gws/merged_gw.csv")
     # x = Organise_season_data(data_in.set_index("GW"))
-    x = pd.read_csv("temp_data_set.csv")
-    # for model in range(1, 5, 1):
+    # x = pd.read_csv("temp_data_set.csv")
+        # for model in range(1, 5, 1):
     #     model_type = {1: 'gk_model.p', 2: 'def_model.p', 3: 'mid_model.p', 4: 'fwd_model.p'}.get(model)
     #     with open(model_type, "wb") as m:
     #         pickle.dump(train_model(x, heads, 1, 1000, model_type), m)
-    with open("general_model.p", "wb") as m:
-        pickle.dump(train_model(x, heads, 100, "General_model.p"), m)
-    print(feature_prediction(35, 481))
+    # with open("general_model.p", "wb") as m:
+    #     pickle.dump(train_model(x, heads, 100, "General_model.p"), m)
+    print(feature_prediction(1, 302))
 
 if __name__ == "__main__":
     main()

@@ -12,8 +12,8 @@ from collector import merge_all_gws
 
 predict = True
 select_team = True
-gather_understat = False
-organise_data = True
+gather_understat = True
+organise_data = False
 get_team = True
 current_gameweek = get_recent_gameweek_id()
 
@@ -42,7 +42,7 @@ def main():
         obtain_player_data()
     if select_team:
         print("Selecting team based on predictions")
-        team_selection(104.9, 0.2, current_gameweek)
+        team_selection(105, 0.2, current_gameweek)
 
 
 if __name__ == "__main__":
